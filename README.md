@@ -1,95 +1,185 @@
-# World in Motion — Country Globe
+# WORLD IN MOTION
 
-React + TypeScript + Tailwind ลูกโลกพื้นผิวจริง พร้อมชี้และเลือกประเทศ วาดบน Canvas เดียวด้วย native WebGL โดยไม่มี Three.js หรือแพ็กเกจ 3D เพิ่มเติม
+เว็บแอปสำรวจโลกสามมิติและการเปลี่ยนแปลงประชากรผ่านเวลา สร้างด้วย React, TypeScript และ native WebGL บน Canvas เดียว พร้อมข้อมูลรายปีจริงจาก World Bank
 
-## เปิดใน VS Code
+เริ่มจากลูกโลกสีธรรมชาติ แล้วสลับเป็นแผนที่ประชากรเพื่อเลือกประเทศ เลื่อนปี หรือเล่นเวลาแบบต่อเนื่อง ดูจำนวนคน แนวโน้มย้อนหลัง และตารางข้อมูลในหน้าเดียว
+
+![แผนที่ประชากรพร้อมข้อมูลประเทศและเส้นเวลา](docs/images/population-globe.jpg)
+
+## ฟีเจอร์ปัจจุบัน
+
+- **หน้าเปิดเต็มจอ** — ลูกโลกขนาดใหญ่กับชื่อ WORLD IN MOTION กดเริ่มแล้วซูมออกเข้าสู่หน้าหลัก โดยใช้ Canvas เดิมตลอด
+- **แผนที่โลก** — พื้นผิวโลกสีธรรมชาติ ขอบเขต 240 ประเทศและดินแดน ชี้เพื่อไฮไลต์ คลิกเพื่อหมุนและซูมไปยังประเทศนั้น
+- **ข้อมูลประเทศ** — การ์ดลอย 2.5D เชื่อมกับตำแหน่งประเทศ แสดงรูปร่างแผนที่ในโหมดแผนที่โลก และตัวเลข/กราฟในโหมดประชากร
+- **แผนที่ประชากร** — สีน้ำเงินหม่นไล่ไปขาว ค่ายิ่งมากยิ่งสว่าง พร้อมคำอธิบายสี พื้นที่ไม่มีข้อมูลใช้สีเทา
+- **เส้นเวลา 1960–2025** — ลากเลือกปี หรือกดเล่นให้แถบเวลา จุดบนกราฟ และสีประเทศไหลต่อเนื่องด้วยนาฬิกาเดียวกัน
+- **เลขมิเตอร์ทีละหลัก** — จำนวนประชากรและปีบนเส้นเวลาใช้วงล้อแยกแต่ละหลัก เมื่อกดหยุดจะจบที่ค่ารายปีจริงทันที
+- **กราฟและตารางย้อนหลัง** — ชี้กราฟเพื่ออ่านค่ารายปี ใช้คีย์บอร์ดได้ และเปิดตารางจำนวนประชากรเต็มได้
+- **เปลี่ยนมุมมองอย่างนุ่มนวล** — ผสมสีพื้นผิวจริงกับสีประชากรประมาณ 700 ms สลับกลับกลางทางได้โดยคงมุมกล้องและประเทศที่เลือก
+- **ธีมอวกาศ** — UI ดำขาว ฟอนต์ Space Grotesk + IBM Plex Sans Thai พื้นหลังดาว ดาวเคราะห์ และเศษอุกกาบาตจาก SVG/CSS
+- **การควบคุม** — ลากหมุนพร้อมแรงเฉื่อย เลื่อนล้อหรือ pinch เพื่อซูม เลือกประเทศจากรายการ และปิดการ์ดด้วย Escape
+
+## เริ่มใช้งาน
+
+ใช้ Node.js 22.18+ หรือเวอร์ชันใหม่กว่าที่รองรับการรันไฟล์ TypeScript โดยตรงสำหรับสคริปต์ตรวจข้อมูล
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-เปิด http://127.0.0.1:5175 — ถ้า Terminal นี้กำลังรันอยู่แล้ว ให้รีเฟรชหน้าเว็บได้เลย
+เปิด [http://127.0.0.1:5175](http://127.0.0.1:5175) ถ้ามีเซิร์ฟเวอร์นี้เปิดอยู่แล้วให้ใช้ตัวเดิม พอร์ตถูกตั้งแบบ strict จึงต้องว่างก่อนเริ่มรอบใหม่
 
-`npm run build` ตรวจ TypeScript และสร้าง production bundle ส่วน `npm run preview` เปิดผล build ที่พอร์ต 5176
+```sh
+npm run build
+npm run preview
+```
 
-## สิ่งที่ทำได้
+`build` ตรวจ TypeScript และสร้างไฟล์ใน `dist/` ส่วน `preview` เปิดผล build ที่ [http://127.0.0.1:5176](http://127.0.0.1:5176)
 
-- พื้นผิวโลกสีธรรมชาติ: ป่า ทะเลทราย มหาสมุทร และน้ำแข็ง
-- เส้นขอบประเทศจาก Natural Earth รุ่น 50m แยกจากภาพพื้นผิว
-- ชี้ประเทศเพื่อไฮไลต์และดูชื่อ คลิกเพื่อเลือก
-- หมุนเข้าหาจุดกึ่งกลางทางภูมิศาสตร์ของประเทศประมาณ 800 ms และคงไฮไลต์ไว้
-- หยุดหมุนอัตโนมัติหลังเลือกประเทศ; ปุ่มกลับมุมเริ่มต้นล้างการเลือก
-- ลากหมุนพร้อมแรงเฉื่อย เลื่อนล้อหรือ pinch เพื่อซูม
-- คีย์บอร์ด: ลูกศรเพื่อหมุน, + / - เพื่อซูม, Home เพื่อกลับมุมเริ่มต้น
-- เลือกประเทศจากรายการได้ทั้งใน demo และเมื่อกด Tab เข้าตัว component
-- รองรับ prefers-reduced-motion และ motion="reduced" โดยเลือก/ซูมทันที ไม่มีแรงเฉื่อยหรือหมุนอัตโนมัติ
-- ปิดลูปวาดเมื่อซ่อนแท็บ หลุดจอ หรือไม่มีการเคลื่อนไหว
+## วิธีสำรวจ
 
-## ไฟล์หลัก
+1. กด **เริ่มสำรวจ** เพื่อเข้าสู่แผนที่โลกสีธรรมชาติ
+2. คลิกประเทศ หรือตั้งค่าจากรายการ **ไปที่ประเทศ** เพื่อเปิดข้อมูล
+3. เลือก **ประชากร** ที่มุมซ้ายบนเพื่อแสดงสีตามจำนวนคนและแถบปี
+4. ลากแถบเวลา หรือกด **เล่น** เพื่อดูการเปลี่ยนแปลง กดหยุดเพื่อค้างตำแหน่งเดิม
+5. กดชื่อเว็บไซต์มุมซ้ายบนเพื่อกลับหน้าเปิด หรือกด **กลับมุมเริ่มต้น** เพื่อล้างประเทศที่เลือกและคืนกล้อง
 
-- `components/ui/interactive-globe.tsx` — React component, tooltip, keyboard picker และ ref API
-- `components/ui/interactive-globe-utils/globe.ts` — pointer controls, inertia, animation และ country picking
-- `components/ui/interactive-globe-utils/surface.ts` — GPU renderer, country ID atlas และเส้นขอบ
-- `components/ui/interactive-globe-utils/countries.ts` — geometry ของ 240 ประเทศและดินแดนที่เตรียมไว้แล้ว
-- `components/ui/interactive-globe-utils/earth.jpg` — ภาพพื้นผิวโลกที่โหลดจากไฟล์ในโปรเจกต์
-- `components/ui/interactive-globe.css` — รูปแบบ component
-- `demo.tsx` — เดโมเต็มจอ
+การเล่นเดินด้วยความเร็ว 700 ms ต่อปี หยุดเมื่อถึงปีสุดท้าย และกดเล่นอีกครั้งเพื่อเริ่มจากปีแรก การลากแถบ สลับมุมมอง กลับหน้าเปิด หรือซ่อนแท็บจะหยุดเล่น โดยการกลับมาสำรวจยังจำปีและประเทศเดิมไว้
 
-## ใช้ใน React / shadcn
+| จุดควบคุม | คีย์บอร์ด |
+| --- | --- |
+| ลูกโลก | ลูกศรหมุน, `+` / `-` ซูม, `Home` คืนกล้อง |
+| แถบปี | ลูกศรเลือกทีละปี, `PageUp` / `PageDown` ข้าม 10 ปี, `Home` / `End` ไปต้น/ท้ายช่วง |
+| กราฟ | ลูกศรดูข้อมูลรายปี, `Home` / `End` ไปต้น/ท้ายช่วง |
+| การ์ดประเทศ | `Escape` ปิด เมื่อไม่ได้โฟกัสรายการประเทศ |
 
-โปรเจกต์นี้ตั้ง React, TypeScript, Tailwind และ alias @/ แล้ว หากเริ่มโปรเจกต์ shadcn ใหม่ ให้ทำตามการติดตั้ง Vite และรัน `npx shadcn@latest init` จากนั้นคัดลอก component, CSS และทั้งโฟลเดอร์ utils ไปด้วย
+## ข้อมูลและความหมายของภาพเคลื่อนไหว
+
+ข้อมูลที่รวมอยู่ใน repo เป็น snapshot ของ **World Bank · World Development Indicators**, indicator **SP.POP.TOTL**: จำนวนประชากรรวมตามค่าประมาณกลางปี หน่วยคน ไม่ใช่ข้อมูลเรียลไทม์
+
+- ช่วงข้อมูลปัจจุบัน: **1960–2025**
+- จับคู่กับแผนที่ได้ **213 ประเทศและดินแดน** จากขอบเขตทั้งหมด 240 พื้นที่
+- วันที่ปรับปรุงจาก World Bank ของ snapshot ปัจจุบัน: **2026-11-11**
+- ใช้รหัส ISO3 ในการจับคู่ ไม่รวมค่ารวมภูมิภาคหรือกลุ่มรายได้
+- ปีเริ่มต้นคือปีล่าสุดที่มีความครอบคลุมอย่างน้อย 95% ของจำนวนพื้นที่สูงสุดในชุดข้อมูล ปัจจุบันคือ 2025
+- เกณฑ์สีเป็น **จำนวนคนทั้งหมด ไม่ใช่ความหนาแน่น** และคงช่วงสีเดียวกันทุกปี
+
+| ช่วงสีจากเข้มไปอ่อน | ประชากร |
+| --- | --- |
+| 1 | ต่ำกว่า 1 ล้าน |
+| 2 | 1 ล้าน ถึงน้อยกว่า 10 ล้าน |
+| 3 | 10 ล้าน ถึงน้อยกว่า 50 ล้าน |
+| 4 | 50 ล้าน ถึงน้อยกว่า 100 ล้าน |
+| 5 | 100 ล้าน ถึงน้อยกว่า 500 ล้าน |
+| 6 | ตั้งแต่ 500 ล้านขึ้นไป |
+| เทา | ไม่มีข้อมูลของพื้นที่/ปีนั้น |
+
+ตำแหน่งบนแถบเวลา จุดกราฟ และสีสามารถอยู่ระหว่างสองปีเพื่อให้เคลื่อนไหวต่อเนื่อง แต่ **ตัวเลขอ้างอิงค่ารายปีจริงของปีที่แสดง** ตัวเลขใหญ่เป็นค่าปัดย่อ ส่วนบรรทัดเล็กและตารางเป็นจำนวนเต็มจริง วงล้อมิเตอร์อาจเห็นเลขระหว่างทางชั่วครู่ขณะหมุน เมื่อหยุดจะจบตรงค่าเป้าหมายจริง
+
+ไม่เติมค่าประชากรที่ขาดด้วยศูนย์ ไม่ลากจุดกราฟข้ามช่วงที่ไม่มีข้อมูล และคำนวณเปอร์เซ็นต์เทียบปีก่อนเฉพาะเมื่อมีข้อมูลครบทั้งสองปี เส้นขอบประเทศเป็นชุดแผนที่คงที่ ไม่ใช่เส้นขอบตามประวัติศาสตร์ของแต่ละปี พื้นผิวโลกก็เป็นภาพคงที่ ไม่ใช่ภาพดาวเทียมสด
+
+## อัปเดตข้อมูลและตรวจงาน
+
+```sh
+npm run data:population
+npm run check:population
+npm run check:playback
+npm run build
+```
+
+- `data:population` ดึงข้อมูลจาก World Bank API ฟรีโดยไม่ต้องใช้ key ตรวจความครบถ้วนก่อนเขียน snapshot ใหม่ ต้องใช้อินเทอร์เน็ต จากนั้น build/เปิดหน้าใหม่เพื่อใช้ชุดข้อมูลล่าสุด
+- `check:population` ตรวจทุกพื้นที่ครบทุกปี การแบ่งสี การจับคู่ ISO3 และสถานะไม่มีข้อมูล ส่งพาธ API JSON ต้นฉบับต่อท้ายคำสั่งเพื่อตรวจ observation ทุกค่ากับต้นฉบับได้
+- `check:playback` จำลอง 60/120/144 Hz ตรวจความเร็ว การหยุด/เล่นต่อ การเลือกปี การจบและเริ่มใหม่ ซ่อนแท็บ เฟรมช้า และช่วงข้อมูลที่ขาด
+- `globe:countries` สร้าง country paths จากข้อมูล Natural Earth ที่เก็บไว้ใน `public/` โดยใช้ D3/topojson เฉพาะในขั้นเตรียมข้อมูล
+
+`data:refresh`, `globe:land`, `server.mjs` และไฟล์บางส่วนใน `public/` เป็นเครื่องมือ/ทรัพยากรจากต้นแบบเดิม หน้าเว็บ React ปัจจุบันใช้ Vite ซึ่งตั้ง `publicDir: false` ไม่คัดลอกต้นแบบเหล่านี้ไปยังผล build
+
+## เทคโนโลยีและโครงสร้าง
+
+React 19 · TypeScript · Tailwind CSS 4 · Vite 8 · native WebGL · SVG/CSS · Web Animations API
+
+ไม่มี Three.js หรือแพ็กเกจกราฟ/แผนที่เพิ่มใน runtime ฟอนต์ ภาพโลก ขอบเขตประเทศ และ snapshot ประชากรเก็บอยู่ในโปรเจกต์ หน้าเว็บไม่ต้องเรียก API ภายนอกระหว่างเล่นเวลา
+
+```text
+components/ui/
+  interactive-globe.tsx                 React component และ ref API
+  interactive-globe.css                 ลูกโลก tooltip และการ์ดประเทศ
+  space-backdrop.tsx                    พื้นหลังอวกาศ SVG/CSS
+  interactive-globe-utils/
+    globe.ts                            กล้อง pointer inertia และ frame loop
+    surface.ts                          WebGL shader, lookup สี และ fade มุมมอง
+    countries.ts                        ขอบเขต 240 ประเทศ/ดินแดนที่เตรียมแล้ว
+    country-popup.tsx                   การ์ดประเทศ 2.5D
+    earth.jpg                           ภาพพื้นผิวโลก
+src/
+  population/
+    population.json                     Snapshot ข้อมูลประชากรพร้อม metadata
+    population.ts                       อ่านค่า จัดช่วงสี และตำแหน่งเชิงภาพ
+    load-population.ts                  โหลด snapshot เมื่อเลือกประชากร
+    playback.ts                         นาฬิกาเศษปีร่วมกัน
+    PopulationTimeline.tsx              แถบปีและปุ่มเล่น
+    PopulationDetails.tsx               จำนวนคน กราฟ และตาราง
+    PopulationLegend.tsx                คำอธิบายสีและแหล่งข้อมูล
+    RollingNumber.tsx                   มิเตอร์ตัวเลขแต่ละหลัก
+    population.css                     ธีมดำขาวและรูปแบบข้อมูล
+  assets/fonts/                         ฟอนต์พร้อมใบอนุญาต OFL
+  fonts.css                             @font-face แบบเก็บไฟล์เอง
+  space.css                             หน้าเปิดและส่วนควบคุมหลัก
+  main.tsx                              React entry
+scripts/                                สคริปต์ข้อมูลและชุดตรวจ
+demo.tsx                                หน้าเว็บหลักและการเชื่อม component
+```
+
+## ใช้ InteractiveGlobe ใน React
+
+โปรเจกต์ตั้ง Tailwind, TypeScript และ alias `@/` ไว้แล้ว และมี `components.json` สำหรับโครงสร้างแบบ shadcn
 
 ```tsx
 import { useRef } from 'react';
 import { InteractiveGlobe, type InteractiveGlobeHandle } from '@/components/ui/interactive-globe';
 
-const globe = useRef<InteractiveGlobeHandle>(null);
-
-<InteractiveGlobe
-  ref={globe}
-  motion="full"
-  autoRotate
-  onSelect={country => console.log(country?.id, country?.name)}
-  style={{ height: 600 }}
-/>
-
-// หมุนเข้าหาประเทศไทย หรือกลับมุมเริ่มต้น
-globe.current?.selectCountry('764');
-globe.current?.reset();
+export function GlobeView() {
+  const globe = useRef<InteractiveGlobeHandle>(null);
+  return <InteractiveGlobe
+    ref={globe}
+    style={{ height: 600 }}
+    autoRotate
+    onSelect={country => console.log(country?.name)}
+  />;
+}
 ```
 
-Props: `theme`, `motion`, `autoRotate`, `onSelect`, `className`, `style`
+| API | การใช้งาน |
+| --- | --- |
+| `theme` | สี `ground`, `land`, `arc`, `glow`, `text`, `muted`; `arc` ใช้เป็นสีเน้น ไม่ได้วาดเส้นทางบิน |
+| `motion`, `autoRotate` | ควบคุมการเคลื่อนไหว/การหมุนอัตโนมัติ |
+| `presentation` | `intro` หรือ `explore` |
+| `onReady`, `onEnterComplete` | แจ้งพื้นผิวพร้อมและการซูมจากหน้าเปิดเสร็จ |
+| `onSelect` | รับข้อมูล Country หรือ `null` เมื่อ reset |
+| `countryColors` | Uint8Array ขนาด 256 × 4 ตาม country index; alpha ระบุว่ามีข้อมูลหรือไม่ |
+| `renderCountryDetails` | ปรับเนื้อหาการ์ดของประเทศ |
+| `className`, `style` | รูปแบบและขนาด component |
+| `ref.selectCountry(id)`, `ref.reset()` | เช่น `selectCountry('764')` เพื่อเลือกไทย หรือคืนกล้อง |
+| `ref.setCountryColorFrame(from, to, mix, running?)` | ส่งคู่ lookup และสัดส่วนสีจากนาฬิกาภายนอกโดยไม่อัปเดต React ทุกเฟรม |
 
-`onSelect` รับ Country หรือ null เมื่อ reset: `id`, `index`, `name`, `englishName`, `iso3`, `region`, `lon`, `lat`
+## ประสิทธิภาพและการเข้าถึง
 
-Theme คงชื่อสี 6 ช่องเดิม: `ground`, `land`, `arc`, `glow`, `text`, `muted` โดย `arc` ใช้เป็นสีไฮไลต์ประเทศ ไม่ได้วาดเส้นทางแล้ว พื้นผิวสีธรรมชาติมาจากภาพโลกจริง
+- Canvas เดียว วาดทรงกลมด้วย GPU ใน draw call เดียว และ cache country ID atlas
+- เตรียม lookup สีทุกปีครั้งเดียว จากนั้นอัปโหลดเฉพาะคู่ปีเมื่อจำเป็น เปลี่ยนสัดส่วนสีผ่าน uniform
+- แถบเวลาและ SVG playhead ขยับผ่าน DOM refs; React เปลี่ยนค่าตัวเลขเมื่อข้ามปี ส่วนมิเตอร์ใช้ compositor animation
+- ใช้ ResizeObserver, DPR ไม่เกิน 2, delta-time จำกัด 50 ms และ pointer capture
+- ลูกโลกหยุดวาดเมื่อซ่อนแท็บ/หลุดจอ และเมื่อไม่มีการเคลื่อนไหวที่ต้องวาด; การเล่นเวลาหยุดเมื่อซ่อนแท็บ
+- รองรับคีย์บอร์ด ข้อความกำกับ และตารางข้อมูลสำรอง ฟอนต์เก็บเองจึงไม่ต้องโหลดจาก Google ตอนเปิดเว็บ
+- `prefers-reduced-motion` ลดเอฟเฟกต์กล้อง พื้นหลัง มิเตอร์ และการเปลี่ยนมุมมอง; การเล่นเวลาเริ่มเมื่อผู้ใช้กดเท่านั้น
+- เปิด `/?globePerf=1` เพื่อดู `data-globe-metrics`, `data-globe-pose` และ `data-color-blend` บน Canvas ค่า `p95DrawMs` เป็นเวลาส่งงานจาก JavaScript ไม่ใช่เวลาทำงาน GPU ทั้งหมด
 
-## ประสิทธิภาพและความแม่นยำ
+ความลื่นขึ้นอยู่กับอุปกรณ์และเบราว์เซอร์ ชุดขอบเขตแผนที่ยังทำให้ JavaScript bundle ค่อนข้างใหญ่ และ build อาจแจ้งเตือนขนาด chunk
 
-- ใช้ GPU วาดทรงกลมและพื้นผิวใน draw call เดียว ไม่อัปเดต React state ในเฟรมลูป
-- สร้าง country ID atlas และเส้นขอบครั้งเดียวแล้ว cache; เปลี่ยน hover/selection ด้วย uniforms
-- ใช้พิกัดบนทรงกลมย้อนกลับเป็น lon/lat เพื่อเลือกประเทศ ตรวจ Path2D เพิ่มตรงชายฝั่ง/เกาะเล็กเพื่อไม่อ่าน ID ที่ปนจาก anti-aliasing
-- DPR จำกัดไม่เกิน 2, ResizeObserver, delta-time จำกัด 50 ms, exponential damping
-- ข้อมูลภูมิศาสตร์และภาพเก็บในโปรเจกต์ เปิดเว็บแล้วไม่เรียก World Bank หรือบริการแผนที่ภายนอก
-- เปิด `/?globePerf=1` เพื่อวัดเป็นชุดละ 120 เฟรม และอ่าน `data-globe-metrics` กับ `data-globe-pose` บน Canvas
-- ตัวเลข p95DrawMs วัดเวลาฝั่ง JavaScript ที่ส่งงานวาด ไม่ใช่เวลาทำงานของ GPU ทั้งหมด
-- ข้อมูลแผนที่ละเอียดขึ้นทำให้ดาวน์โหลดเริ่มต้นมากขึ้น แต่ไม่เพิ่มจำนวน polygon ที่ต้องคำนวณในแต่ละเฟรม
+## แหล่งข้อมูลและเครดิต
 
-## แหล่งข้อมูล
-
-- ขอบเขต: Natural Earth (public domain), world-atlas 2 / countries-50m.json
-- พื้นผิว: https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg ใช้เฉพาะภาพ ไม่ได้ใช้ Three.js ในแอป
-- ชื่อและภูมิภาคบางส่วนมาจาก metadata World Bank ที่เคยเก็บไว้ ไม่มีการแสดงตัวเลขตัวชี้วัดในขั้นนี้
-
-รัน `npm run globe:countries` เพื่อสร้าง country paths ใหม่ สคริปต์เตรียมข้อมูลใช้ D3 และ topojson-client ที่เก็บไว้ใน public/vendor เท่านั้น ทั้งสองไม่ได้รวมในแอป runtime
-
-พื้นผิวเป็นภาพประกอบคงที่ ไม่ใช่ภาพดาวเทียมสด เส้นขอบประเทศอ้างอิงชุดข้อมูล Natural Earth
-
-## ซูมและ popup ประเทศ
-
-เมื่อเลือกประเทศ จะหมุนและซูมเข้า 1.22 เท่าในประมาณ 800 ms แล้วเปิดการ์ดลอย 2.5D ที่เชื่อมกับจุดกึ่งกลางประเทศ การ์ดมีชื่อ รหัส ISO3 ภูมิภาค และภาพรูปร่างประเทศแบบยกชั้นจากขอบเขตจริง
-
-บนมือถือจะขยับลูกโลกขึ้นเพื่อเว้นที่ให้การ์ดด้านล่าง ปิดด้วยปุ่ม ×, กลับไปดูลูกโลก หรือ Escape (เมื่อไม่ได้โฟกัสรายการประเทศ) จะคืนการเลือกและซูมกลับมุมเริ่มต้น รองรับโหมดลดการเคลื่อนไหวโดยแสดงผลทันที
-
-ตำแหน่งการ์ดและเส้นเชื่อมอัปเดตผ่าน DOM refs ในลูปวาด ไม่เรียก React setState ต่อเฟรม รูปแบบการ์ดอยู่ใน interactive-globe.css และเนื้อหาอยู่ใน interactive-globe-utils/country-popup.tsx
+- [World Bank — Population, total](https://data.worldbank.org/indicator/SP.POP.TOTL) และ [นิยาม SP.POP.TOTL](https://databank.worldbank.org/metadataglossary/world-development-indicators/series/SP.POP.TOTL): snapshot ข้อมูลประชากร WDI, CC BY 4.0
+- [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation): แหล่งสำหรับสคริปต์อัปเดตข้อมูลและ metadata ประเทศ
+- [Natural Earth](https://www.naturalearthdata.com/) ผ่าน [world-atlas](https://github.com/topojson/world-atlas): เส้นขอบ countries-50m ข้อมูล Natural Earth เป็น public domain
+- [ภาพพื้นผิวจาก Three.js examples](https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg): ใช้เฉพาะไฟล์ภาพ ไม่ได้ใช้ Three.js เป็นตัววาด
+- [Space Grotesk](https://github.com/floriankarsten/space-grotesk) และ [IBM Plex Sans Thai](https://github.com/IBM/plex): ฟอนต์ภายใต้ SIL Open Font License ใบอนุญาตรวมอยู่ใน `src/assets/fonts/`

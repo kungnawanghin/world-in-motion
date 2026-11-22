@@ -1,5 +1,6 @@
 {
   "name": "world-in-motion",
+  "description": "Interactive 3D world and population explorer with World Bank data, synchronized historical playback, rolling counters, and a native WebGL globe.",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,6 +8,9 @@
     "dev": "vite",
     "start": "vite",
     "data:refresh": "node scripts/refresh-data.mjs",
+    "data:population": "node scripts/refresh-population.mjs",
+    "check:population": "node scripts/check-population.mjs",
+    "check:playback": "node scripts/check-playback.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "globe:land": "node scripts/generate-globe-land.mjs",

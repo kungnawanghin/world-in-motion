@@ -62,9 +62,14 @@ uniform float radius;
 uniform vec4 rotation;
 uniform sampler2D earth;
 uniform sampler2D countries;
+uniform sampler2D countryColors;
+uniform sampler2D previousCountryColors;
+uniform float colorMix;
+uniform float thematic;
 uniform float photoReady;
 uniform float hovered;
 uniform float selected;
+uniform float borderOpacity;
 uniform vec3 ground;
 uniform vec3 land;
 uniform vec3 accent;
@@ -75,7 +80,7 @@ void main() {
   float d2 = dot(p, p);
   if (d2 > 1.0) {
     float halo = exp(-(sqrt(d2) - 1.0) * 49.0) * 0.16;
-    gl_FragColor = vec4(mix(ground, glow, halo), 1.0);
+    gl_FragColor = vec4(glow, halo);
     return;
   }
   vec3 normal = vec3(p, sqrt(max(0.0, 1.0 - d2)));
@@ -89,16 +94,24 @@ void main() {
   float isLand = step(0.5, id);
   vec3 fallback = mix(mix(glow, land, 0.75), land, isLand);
   vec3 surface = mix(fallback, texture2D(earth, uv).rgb, photoReady);
+  // Country-indexed lookup: changing a dataset never rebuilds the geographic atlas.
+  vec2 colorUV = vec2((id + 0.5) / 256.0, 0.5);
+  vec4 previousData=texture2D(previousCountryColors,colorUV),nextData=texture2D(countryColors,colorUV);
+  // Missing observations stay missing until a real annual value is reached.
+  float validBlend = max(previousData.a*nextData.a,step(1.0,colorMix));
+  vec3 dataColor = mix(previousData.rgb,nextData.rgb,colorMix*validBlend);
+  float dataAmount = thematic * borderOpacity * isLand;
+  surface = mix(surface, dataColor, dataAmount * 0.88);
   // Use a restrained tint, retaining real deserts, forests and ice underneath.
   float isSelected = step(0.5, selected) * (1.0 - step(0.25, abs(id - selected)));
   float isHovered = step(0.5, hovered) * (1.0 - step(0.25, abs(id - hovered)));
-  surface = mix(surface, accent, isSelected * 0.43);
-  surface = mix(surface, mix(accent, vec3(1.0), 0.38), isHovered * 0.44);
+  surface = mix(surface, accent, isSelected * 0.22 * (1.0-dataAmount));
+  surface = mix(surface, mix(accent, vec3(1.0), 0.38), isHovered * mix(0.3,0.07,dataAmount));
   float luminance = dot(surface, vec3(0.2126, 0.7152, 0.0722));
   vec3 border = mix(vec3(0.88,0.94,0.91), vec3(0.10,0.18,0.17), smoothstep(0.30,0.55,luminance));
   border = mix(border, mix(accent, vec3(1.0), 0.68), max(isSelected, isHovered));
-  float borderStrength = max(isSelected,isHovered) > 0.0 ? 0.98 : 0.78;
-  surface = mix(surface, border, region.b * borderStrength);
+  float borderStrength = max(isSelected,isHovered) > 0.0 ? 0.98 : mix(0.78,0.48,dataAmount);
+  surface = mix(surface, border, region.b * borderStrength * borderOpacity);
   float light = max(0.0, dot(normal, normalize(vec3(-0.48,0.58,1.0))));
   surface *= 0.56 + 0.63 * light;
   surface = mix(surface, glow, pow(1.0-normal.z, 4.0) * 0.26);
@@ -109,13 +122,16 @@ void main() {
 
 type SurfaceTheme = { ground: string; land: string; arc: string; glow: string };
 export type Surface = {
-  draw: (width: number, height: number, radius: number, yaw: number, pitch: number, hovered: number, selected: number, centerX?: number, centerY?: number) => void;
+  draw: (width: number, height: number, radius: number, yaw: number, pitch: number, hovered: number, selected: number, centerX?: number, centerY?: number, borderOpacity?: number) => void;
   setTheme: (theme: SurfaceTheme) => void;
+  setCountryColors: (colors?: Uint8Array) => void;
+  setColorFrame: (from:Uint8Array,to:Uint8Array,mix:number) => void;
+  advanceColors: (dt:number, immediate:boolean) => boolean;
   dispose: () => void;
 };
 
 export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, onReady: () => void): Surface {
-  const gl = canvas.getContext('webgl', { alpha: false, antialias: true, powerPreference: 'low-power' });
+  const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true, powerPreference: 'low-power' });
   if (!gl) throw new Error('ไม่สามารถเปิดภาพสามมิติได้ กรุณาตรวจการตั้งค่า WebGL ของเบราว์เซอร์');
   const compile = (kind: number, source: string) => {
     const shader = gl.createShader(kind)!; gl.shaderSource(shader, source); gl.compileShader(shader);
@@ -129,7 +145,7 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
   const buffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
   const position = gl.getAttribLocation(program, 'position'); gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-  const uniforms = Object.fromEntries(['resolution','center','radius','rotation','earth','countries','photoReady','hovered','selected','ground','land','accent','glow'].map(name => [name, gl.getUniformLocation(program,name)]));
+  const uniforms = Object.fromEntries(['resolution','center','radius','rotation','earth','countries','countryColors','previousCountryColors','colorMix','thematic','photoReady','hovered','selected','borderOpacity','ground','land','accent','glow'].map(name => [name, gl.getUniformLocation(program,name)]));
   const makeTexture = (unit: number, linear: boolean) => {
     const texture = gl.createTexture()!; gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D,texture);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,linear?gl.LINEAR:gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,linear?gl.LINEAR:gl.NEAREST);
@@ -140,6 +156,19 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([34,80,105,255]));
   const countryTexture = makeTexture(1,false), atlas = getAtlas();
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,atlas.width,atlas.height,0,gl.RGBA,gl.UNSIGNED_BYTE,atlas.pixels);
+  const colorTexture = makeTexture(2,false);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(256*4));
+  gl.uniform1i(uniforms.countryColors,2);gl.uniform1f(uniforms.thematic,0);
+  const previousColorTexture=makeTexture(3,false);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(256*4));
+  gl.uniform1i(uniforms.previousCountryColors,3);gl.uniform1f(uniforms.colorMix,1);
+  let previousColors:Uint8Array|undefined,targetColors:Uint8Array|undefined,colorProgress=1;
+  let externalColors=false;
+  let layerOpacity=0,layerTarget=0,layerFrom=0,layerElapsed=.7;
+  function targetLayer(target:number){
+    if(target===layerTarget)return;
+    layerFrom=layerOpacity;layerTarget=target;layerElapsed=0;
+  }
   gl.uniform1i(uniforms.earth,0); gl.uniform1i(uniforms.countries,1); gl.uniform1f(uniforms.photoReady,0);
   let disposed = false;
   const image = new Image();
@@ -160,15 +189,46 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
   setTheme(theme);
   return {
     setTheme,
-    draw(width,height,radius,yaw,pitch,hovered,selected,centerX=width/2,centerY=height/2) {
+    setCountryColors(colors) {
+      externalColors=false;
+      if(colors&&colors.length!==256*4)throw new Error('Country colors must contain 256 RGBA entries.');
+      gl.useProgram(program);targetLayer(colors?1:0);
+      if(colors){
+        // Start from the currently visible blend when the slider moves again mid-transition.
+        const from=targetColors&&previousColors?Uint8Array.from(targetColors,(value,i)=>Math.round(previousColors![i]+(value-previousColors![i])*colorProgress)):colors;
+        colorProgress=targetColors?0:1;previousColors=from;targetColors=colors;
+        gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,previousColorTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,from);
+        gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,colorTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,colors);
+      }else{externalColors=true;}
+      gl.uniform1f(uniforms.colorMix,colorProgress);
+    },
+    setColorFrame(from,to,mix){
+      externalColors=true;gl.useProgram(program);
+      if(previousColors!==from){gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,previousColorTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,from);previousColors=from;}
+      if(targetColors!==to){gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,colorTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,to);targetColors=to;}
+      colorProgress=Math.max(0,Math.min(1,mix));gl.uniform1f(uniforms.colorMix,colorProgress);targetLayer(1);
+    },
+    advanceColors(dt,immediate){
+      gl.useProgram(program);
+      if(layerElapsed<.7){
+        layerElapsed=immediate ? .7 : Math.min(.7,layerElapsed+dt);
+        const t=layerElapsed/.7,ease=t*t*(3-2*t);
+        layerOpacity=layerFrom+(layerTarget-layerFrom)*ease;
+        gl.uniform1f(uniforms.thematic,layerOpacity);
+      }
+      if(!externalColors&&colorProgress<1){colorProgress=immediate?1:Math.min(1,colorProgress+dt/.18);gl.uniform1f(uniforms.colorMix,colorProgress);}
+      return layerElapsed<.7||!externalColors&&colorProgress<1;
+    },
+    draw(width,height,radius,yaw,pitch,hovered,selected,centerX=width/2,centerY=height/2,borderOpacity=1) {
       if(disposed||gl.isContextLost())return;
       gl.viewport(0,0,width,height);gl.useProgram(program);
       gl.uniform2f(uniforms.resolution,width,height);gl.uniform1f(uniforms.radius,radius);
       gl.uniform2f(uniforms.center,centerX,height-centerY);
       gl.uniform4f(uniforms.rotation,Math.cos(yaw),Math.sin(yaw),Math.cos(pitch),Math.sin(pitch));
       gl.uniform1f(uniforms.hovered,hovered);gl.uniform1f(uniforms.selected,selected);
+      gl.uniform1f(uniforms.borderOpacity,borderOpacity);
       gl.drawArrays(gl.TRIANGLES,0,6);
     },
-    dispose() { disposed=true;image.onload=null;image.onerror=null;gl.deleteTexture(earthTexture);gl.deleteTexture(countryTexture);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vertex);gl.deleteShader(fragment); },
+    dispose() { disposed=true;image.onload=null;image.onerror=null;gl.deleteTexture(earthTexture);gl.deleteTexture(countryTexture);gl.deleteTexture(colorTexture);gl.deleteTexture(previousColorTexture);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vertex);gl.deleteShader(fragment); },
   };
 }

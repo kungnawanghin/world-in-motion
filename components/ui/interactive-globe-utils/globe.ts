@@ -7,13 +7,18 @@ export type GlobeOptions = {
   theme: GlobeTheme;
   motion?: 'full' | 'reduced';
   autoRotate?: boolean;
+  countryColors?: Uint8Array;
+  presentation?: 'intro' | 'explore';
+  onEnterComplete?: () => void;
+  onReady?: () => void;
   onSelect?: (country: Country | null) => void;
   onAnchor?: (anchor: GlobeAnchor | null) => void;
 };
 export type GlobeAnchor = { x: number; y: number; width: number; height: number; visible: boolean; settled: boolean };
-export type GlobeController = { update: (options: GlobeOptions) => void; select: (id: string) => void; reset: () => void; dispose: () => void };
+export type GlobeController = { update: (options: GlobeOptions) => void; select: (id: string) => void; reset: () => void; setColorFrame:(from:Uint8Array,to:Uint8Array,mix:number,running?:boolean)=>void; dispose: () => void };
 type Hover = (country: Country | null, x: number, y: number) => void;
 type Focus = { yaw: number; pitch: number; zoom: number; offsetY: number; fromYaw: number; fromPitch: number; fromZoom: number; fromOffsetY: number; elapsed: number };
+type Entrance = { from: number; to: number; fromBorders: number; toBorders: number; elapsed: number };
 export const DEFAULT_THEME: GlobeTheme = {
   ground: '#f7fafc', land: '#315b43', arc: '#3aa9b3', glow: '#85c7e6', text: '#15202b', muted: '#61798b',
 };
@@ -30,7 +35,9 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
   let reduced = options.motion === 'reduced' || media.matches;
   let width = 0, height = 0, dpr = 1, radius = 1, cx = 0, cy = 0;
   let yaw = DEFAULT_YAW, pitch = DEFAULT_PITCH, velocityX = 0, velocityY = 0;
-  let zoom = 1, targetZoom = 1, focus: Focus | null = null;
+  let intro = initial.presentation === 'intro';
+  let zoom = intro?2.4:1, targetZoom = zoom, focus: Focus | null = null;
+  let borderOpacity = intro?0:1, entrance: Entrance | null = null;
   let offsetY = 0, targetOffsetY = 0, anchorSent = false;
   let selected: Country | null = null, hovered: Country | null = null;
   let lastInput = -Infinity, lastTime = 0, raf = 0, inView = true;
@@ -42,7 +49,15 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
   const profiling = new URLSearchParams(location.search).get('globePerf') === '1';
   const frameIntervals = new Float32Array(120), paintDurations = new Float32Array(120);
   let sampleCount = 0;
-  let surface = createSurface(canvas, options.theme, invalidate);
+  let ready=false;
+  function surfaceReady(){
+    invalidate();if(ready)return;ready=true;canvas.dataset.ready='true';
+    queueMicrotask(()=>{if(!disposed)options.onReady?.();});
+  }
+  let surface = createSurface(canvas, options.theme, surfaceReady);
+  let externalFrame:{from:Uint8Array;to:Uint8Array;mix:number;running:boolean}|undefined;
+  surface.setCountryColors(options.countryColors);
+  canvas.dataset.presentation=intro?'intro':'explore';
 
   function canDraw() { return !disposed && !contextLost && inView && !document.hidden && width > 0 && height > 0; }
   function invalidate() { if (!raf && canDraw()) raf = requestAnimationFrame(frame); }
@@ -53,6 +68,20 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     if (profiling) canvas.dataset.globePose = JSON.stringify({ country: selected?.id ?? null, lon: +(-wrap(yaw)/DEG).toFixed(3), lat: +(pitch/DEG).toFixed(3), zoom: +zoom.toFixed(3), offsetY: +offsetY.toFixed(1) });
   }
   function selectionOffset() { return selected && width < 640 ? -Math.min(112,height*.14) : 0; }
+  function finishEntrance(){
+    entrance=null;canvas.dataset.presentation=intro?'intro':'explore';lastInput=performance.now();publishPose();
+    if(!intro)queueMicrotask(()=>{if(!disposed&&!intro)options.onEnterComplete?.();});
+  }
+  function setPresentation(next:'intro'|'explore'){
+    const nextIntro=next==='intro';if(nextIntro===intro)return;
+    intro=nextIntro;stopMomentum();hideTooltip();
+    if(selected){selected=null;delete canvas.dataset.selectedCountry;options.onSelect?.(null);}
+    offsetY=targetOffsetY=0;targetZoom=intro?2.4:1;
+    canvas.dataset.presentation=intro?'intro':'entering';
+    if(reduced){zoom=targetZoom;borderOpacity=intro?0:1;finishEntrance();}
+    else entrance={from:zoom,to:targetZoom,fromBorders:borderOpacity,toBorders:intro?0:1,elapsed:0};
+    resetClock();invalidate();
+  }
   function publishAnchor() {
     if(!selected){if(anchorSent)options.onAnchor?.(null);anchorSent=false;return;}
     const lat=selected.lat*DEG,lon=selected.lon*DEG;
@@ -72,6 +101,15 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     hideTooltip(); resetClock(); invalidate();
   }
   function advance(dt:number,time:number) {
+    if(entrance){
+      entrance.elapsed=Math.min(1.3,entrance.elapsed+dt);const t=ease(entrance.elapsed/1.3);
+      zoom=entrance.from+(entrance.to-entrance.from)*t;
+      borderOpacity=entrance.fromBorders+(entrance.toBorders-entrance.fromBorders)*t;
+      yaw+=.009*dt;
+      if(entrance.elapsed>=1.3){zoom=entrance.to;borderOpacity=entrance.toBorders;finishEntrance();}
+      return;
+    }
+    if(intro){if(!reduced)yaw+=.009*dt;return;}
     if(reduced){zoom=targetZoom;offsetY=targetOffsetY;velocityX=velocityY=0;return;}
     if(focus){
       focus.elapsed=Math.min(.8,focus.elapsed+dt);const t=ease(focus.elapsed/.8);
@@ -99,9 +137,11 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     const started=profiling?performance.now():0;
     if(Math.min(window.devicePixelRatio||1,2)!==dpr)resize();
     const interval=lastTime?time-lastTime:0;lastTime=time;
-    advance(Math.min(interval/1000,.05),time);
+    const dt=Math.min(interval/1000,.05);
+    advance(dt,time);
+    const colorsMoving=surface.advanceColors(dt,reduced);
     cy=height/2+offsetY;
-    surface.draw(canvas.width,canvas.height,radius*zoom*dpr,yaw,pitch,hovered?.index??0,selected?.index??0,cx*dpr,cy*dpr);
+    surface.draw(canvas.width,canvas.height,radius*zoom*dpr,yaw,pitch,hovered?.index??0,selected?.index??0,cx*dpr,cy*dpr,borderOpacity);
     publishAnchor();
     if(profiling&&!reduced&&interval>0){
       frameIntervals[sampleCount]=interval;paintDurations[sampleCount]=performance.now()-started;sampleCount++;
@@ -113,10 +153,11 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     }
     const idleRotation=!selected&&!hovered&&options.autoRotate!==false;
     const tiltReturn=!selected&&!hovered&&Math.abs(pitch-DEFAULT_PITCH)>.0001;
-    if(!reduced&&(focus||dragging||velocityX||velocityY||Math.abs(targetZoom-zoom)>.0001||Math.abs(targetOffsetY-offsetY)>.1||idleRotation||tiltReturn))invalidate();
-    else resetClock();
+    if(externalFrame?.running||!reduced&&(colorsMoving||intro||entrance||focus||dragging||velocityX||velocityY||Math.abs(targetZoom-zoom)>.0001||Math.abs(targetOffsetY-offsetY)>.1||idleRotation||tiltReturn))invalidate();
+    else if(!externalFrame?.running)resetClock();
   }
   function select(id:string){
+    if(intro||entrance)return;
     const country=COUNTRIES.find(c=>c.id===id);if(!country)return;
     hideTooltip();stopMomentum();selected=country;lastInput=performance.now();
     targetZoom=1.22;targetOffsetY=selectionOffset();
@@ -126,6 +167,7 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     canvas.dataset.selectedCountry=country.id;invalidate();options.onSelect?.(country);
   }
   function reset(){
+    if(intro||entrance)return;
     hideTooltip();stopMomentum();selected=null;targetZoom=1;targetOffsetY=0;lastInput=performance.now();delete canvas.dataset.selectedCountry;
     const targetYaw=yaw+wrap(DEFAULT_YAW-yaw);
     if(reduced){yaw=targetYaw;pitch=DEFAULT_PITCH;zoom=1;offsetY=0;publishPose();}
@@ -148,6 +190,7 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
   }
   function pinchLength(){const values=[...pointers.values()];return Math.max(1,Math.hypot(values[0].x-values[1].x,values[0].y-values[1].y));}
   function onDown(e:PointerEvent){
+    if(intro||entrance)return;
     if(e.pointerType==='mouse'&&e.button!==0)return;
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);lastTouch=e.pointerType==='touch';
     lastInput=performance.now();stopMomentum();hideTooltip();
@@ -156,6 +199,7 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     canvas.style.cursor='grabbing';invalidate();
   }
   function onMove(e:PointerEvent){
+    if(intro||entrance)return;
     if(!pointers.has(e.pointerId)){if(e.pointerType!=='touch'&&!focus)updateHover(e);return;}
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const now=performance.now();lastInput=now;
     if(pointers.size>=2){targetZoom=clamp(pinchZoom*pinchLength()/pinchDistance,.75,1.65);if(reduced)zoom=targetZoom;invalidate();return;}
@@ -185,11 +229,13 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
   }
   function onLeave(){if(!dragging){hideTooltip();lastInput=performance.now();canvas.style.cursor='grab';invalidate();}}
   function onWheel(e:WheelEvent){
+    if(intro||entrance)return;
     e.preventDefault();lastInput=performance.now();const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?height:1);
     targetZoom=clamp(targetZoom*Math.exp(-delta*.001),.75,1.65);if(reduced)zoom=targetZoom;hideTooltip();invalidate();
     if(focus)focus.zoom=targetZoom;
   }
   function onKey(e:KeyboardEvent){
+    if(intro||entrance)return;
     if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','+','-','='].includes(e.key))return;
     e.preventDefault();lastInput=performance.now();stopMomentum();hideTooltip();if(e.key==='Home'){reset();return;}
     if(e.key==='ArrowLeft')yaw-=.12;if(e.key==='ArrowRight')yaw+=.12;
@@ -202,12 +248,13 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
     if(document.hidden){hideTooltip();for(const id of pointers.keys())if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id);pointers.clear();dragging=false;stopMomentum();canvas.style.cursor='grab';}invalidate();
   }
   function settleMotion(){
+    if(reduced&&entrance){zoom=entrance.to;borderOpacity=entrance.toBorders;finishEntrance();}
     if(reduced&&focus){yaw=focus.yaw;pitch=focus.pitch;zoom=focus.zoom;offsetY=focus.offsetY;publishPose();}
     stopMomentum();resetClock();invalidate();
   }
   function motionChange(){reduced=options.motion==='reduced'||media.matches;settleMotion();}
   function onContextLost(e:Event){e.preventDefault();contextLost=true;visibility();}
-  function onContextRestored(){if(disposed)return;surface.dispose();surface=createSurface(canvas,options.theme,invalidate);contextLost=false;resetClock();invalidate();}
+  function onContextRestored(){if(disposed)return;surface.dispose();surface=createSurface(canvas,options.theme,surfaceReady);surface.setCountryColors(options.countryColors);if(externalFrame)surface.setColorFrame(externalFrame.from,externalFrame.to,externalFrame.mix);contextLost=false;resetClock();invalidate();}
   canvas.addEventListener('pointerdown',onDown);canvas.addEventListener('pointermove',onMove);canvas.addEventListener('pointerup',onUp);canvas.addEventListener('pointercancel',onCancel);canvas.addEventListener('lostpointercapture',onCancel);canvas.addEventListener('pointerleave',onLeave);canvas.addEventListener('wheel',onWheel,{passive:false});canvas.addEventListener('keydown',onKey);
   canvas.addEventListener('webglcontextlost',onContextLost);canvas.addEventListener('webglcontextrestored',onContextRestored);
   document.addEventListener('visibilitychange',visibility);media.addEventListener('change',motionChange);
@@ -215,7 +262,12 @@ export function createGlobe(canvas: HTMLCanvasElement, initial: GlobeOptions, ho
   const intersectionObserver=new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;visibility();});intersectionObserver.observe(canvas);resize();
   return{
     select,reset,
-    update(next){const changed=JSON.stringify(options.theme)!==JSON.stringify(next.theme);options=next;const nextReduced=options.motion==='reduced'||media.matches;if(nextReduced!==reduced){reduced=nextReduced;settleMotion();}if(changed)surface.setTheme(options.theme);invalidate();},
+    setColorFrame(from,to,mix,running=false){
+      if(disposed||!options.countryColors)return;
+      externalFrame={from,to,mix,running};if(profiling)canvas.dataset.colorBlend=String(mix);
+      if(!contextLost){surface.setColorFrame(from,to,mix);invalidate();}
+    },
+    update(next){const changed=JSON.stringify(options.theme)!==JSON.stringify(next.theme),colorsChanged=options.countryColors!==next.countryColors;options=next;const nextReduced=options.motion==='reduced'||media.matches;if(nextReduced!==reduced){reduced=nextReduced;settleMotion();}setPresentation(options.presentation??'explore');if(changed)surface.setTheme(options.theme);if(colorsChanged){externalFrame=undefined;surface.setCountryColors(options.countryColors);}invalidate();},
     dispose(){
       disposed=true;if(raf)cancelAnimationFrame(raf);resizeObserver.disconnect();intersectionObserver.disconnect();surface.dispose();
       document.removeEventListener('visibilitychange',visibility);media.removeEventListener('change',motionChange);
