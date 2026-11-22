@@ -1,0 +1,28 @@
+{
+  "name": "world-in-motion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "data:refresh": "node scripts/refresh-data.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "globe:land": "node scripts/generate-globe-land.mjs",
+    "globe:countries": "node scripts/generate-globe-countries.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}
