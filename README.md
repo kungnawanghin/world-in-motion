@@ -1,6 +1,6 @@
 # WORLD IN MOTION
 
-**เว็บจริง: [world-in-motion-six.vercel.app](https://world-in-motion-six.vercel.app/)**
+**เว็บจริง: [worldinmotion.vercel.app](https://worldinmotion.vercel.app/)**
 
 เว็บแอปสำรวจโลกสามมิติผ่านข้อมูลประชากร GDP ต่อหัวแบบปรับเงินเฟ้อ อายุคาดเฉลี่ย และผู้ใช้อินเทอร์เน็ต สร้างด้วย React, TypeScript และ native WebGL บน Canvas เดียว พร้อมข้อมูลรายปีจริงจาก World Bank
 
@@ -292,7 +292,7 @@ Snapshot ปัจจุบันครอบคลุมปี 1990–2025 ม�
 
 ## เผยแพร่ผ่าน Vercel
 
-เว็บจริง: **[https://world-in-motion-six.vercel.app/](https://world-in-motion-six.vercel.app/)**
+เว็บจริง: **[https://worldinmotion.vercel.app/](https://worldinmotion.vercel.app/)**
 จัดการโปรเจกต์: [Vercel Dashboard](https://vercel.com/kungnawanghin/world-in-motion)
 Source: [kungnawanghin/world-in-motion](https://github.com/kungnawanghin/world-in-motion) · Production branch: **main**
 
