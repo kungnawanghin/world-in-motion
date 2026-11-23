@@ -20,3 +20,4 @@
 @media(max-width:480px){.ranking-panel{left:24px;right:24px;bottom:222px;max-height:calc(100svh - 425px)}}
 @media(prefers-reduced-motion:reduce){.ranking-slot,.ranking-bar{transition:none!important;will-change:auto!important}}
 .ranking-panel{pointer-events:none}.ranking-heading,.ranking-content{pointer-events:auto}.ranking-list{overflow:hidden}
+.ranking-heading{padding:6px 0}.ranking-scope{margin-bottom:5px}.ranking-coverage{margin-top:5px}.ranking-selected{margin-top:6px;padding-top:5px}.ranking-selected>button{margin-top:2px}.ranking-selected p{margin-top:2px}

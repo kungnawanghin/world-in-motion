@@ -6,7 +6,7 @@ import {THB_CONVERSION} from '../src/indicators/thb-rate.ts';
 const root=new URL('../',import.meta.url);
 const geometry=await readFile(new URL('components/ui/interactive-globe-utils/countries.ts',root),'utf8');
 const countries=JSON.parse(geometry.slice(geometry.indexOf('= ')+2).trim().replace(/;$/,''));
-for(const file of ['src/population/population.json','src/indicators/gdp.json']){
+for(const file of ['src/population/population.json','src/indicators/gdp.json','src/indicators/life.json','src/indicators/internet.json']){
  const data=JSON.parse(await readFile(new URL(file,root),'utf8'));
  const rankings=buildRankings(data,countries,data.startYear,data.endYear);
  for(const [year,rows] of rankings){

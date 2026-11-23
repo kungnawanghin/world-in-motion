@@ -5,11 +5,13 @@ import {populationAt,populationPosition,NO_DATA_COLOR} from '../src/population/p
 const root=new URL('../',import.meta.url);
 const data=JSON.parse(await readFile(new URL('src/indicators/gdp.json',root),'utf8'));
 const population=JSON.parse(await readFile(new URL('src/population/population.json',root),'utf8'));
+const life=JSON.parse(await readFile(new URL('src/indicators/life.json',root),'utf8'));
+const internet=JSON.parse(await readFile(new URL('src/indicators/internet.json',root),'utf8'));
 const range=JSON.parse(await readFile(new URL('src/indicators/range.json',root),'utf8'));
 const geometry=await readFile(new URL('components/ui/interactive-globe-utils/countries.ts',root),'utf8');
 const countries=JSON.parse(geometry.slice(geometry.indexOf('= ')+2).trim().replace(/;$/,''));
 assert.equal(data.indicator,'NY.GDP.PCAP.KD');assert.equal(data.baseYear,2015);assert.equal(data.unit,'constant 2015 US$');
-assert.equal(range.startYear,Math.min(data.startYear,population.startYear));assert.equal(range.endYear,Math.max(data.endYear,population.endYear));
+assert.equal(range.startYear,Math.min(data.startYear,population.startYear,life.startYear,internet.startYear));assert.equal(range.endYear,Math.max(data.endYear,population.endYear,life.endYear,internet.endYear));
 const codes=new Set(countries.map(c=>c.iso3));
 for(const [code,series] of Object.entries(data.series)){assert(codes.has(code));assert.equal(series.length,data.endYear-data.startYear+1);assert(series.every(v=>v===null||Number.isFinite(v)&&v>=0));}
 assert.equal(indicatorColor(null,INDICATORS.gdp),NO_DATA_COLOR);assert.equal(indicatorColor(0,INDICATORS.gdp),GDP_BINS[0].color);

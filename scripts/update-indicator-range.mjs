@@ -2,7 +2,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 export async function updateIndicatorRange(){
   const datasets=[];
-  for(const path of ['src/population/population.json','src/indicators/gdp.json']){
+  for(const path of ['src/population/population.json','src/indicators/gdp.json','src/indicators/life.json','src/indicators/internet.json']){
     try{datasets.push(JSON.parse(await readFile(new URL(path,root),'utf8')));}
     catch(error){if(error.code!=='ENOENT')throw error;}
   }

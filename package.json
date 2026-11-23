@@ -18,7 +18,11 @@
     "data:gdp": "node scripts/refresh-gdp.mjs",
     "check:indicators": "node scripts/check-indicators.mjs",
     "data:exchange": "node scripts/refresh-exchange-rate.mjs",
-    "check:rankings": "node scripts/check-rankings.mjs"
+    "check:rankings": "node scripts/check-rankings.mjs",
+    "data:life": "node scripts/refresh-life.mjs",
+    "check:life": "node scripts/check-life.mjs",
+    "data:internet": "node scripts/refresh-internet.mjs",
+    "check:internet": "node scripts/check-internet.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

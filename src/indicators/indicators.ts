@@ -1,6 +1,6 @@
 import {THB_CONVERSION} from './thb-rate.ts';
 import {compactPopulation,formatPopulation,POPULATION_BINS,NO_DATA_COLOR,populationAt,type PopulationData} from '../population/population.ts';
-export type IndicatorId='population'|'gdp';
+export type IndicatorId='population'|'gdp'|'life'|'internet';
 export type GDPCurrency='THB'|'USD';
 export type IndicatorData=PopulationData&{unit?:string;baseYear?:number;indicatorName?:string};
 export type IndicatorDefinition={
@@ -18,9 +18,28 @@ export const GDP_BINS=[
   {below:50000,color:'#dfcca1',label:'25,000–50,000 US$',tick:'25'},
   {below:Infinity,color:'#f5e9cf',label:'ตั้งแต่ 50,000 US$',tick:'≥ 50'},
 ] as const;
+export const LIFE_BINS=[
+  {below:50,color:'#173F35',label:'ต่ำกว่า 50 ปี',tick:'< 50'},
+  {below:60,color:'#22654F',label:'50–ต่ำกว่า 60 ปี',tick:'50'},
+  {below:70,color:'#32936F',label:'60–ต่ำกว่า 70 ปี',tick:'60'},
+  {below:75,color:'#65BC96',label:'70–ต่ำกว่า 75 ปี',tick:'70'},
+  {below:80,color:'#A0DEC1',label:'75–ต่ำกว่า 80 ปี',tick:'75'},
+  {below:Infinity,color:'#D9F5E7',label:'ตั้งแต่ 80 ปี',tick:'≥ 80'},
+] as const;
+export const INTERNET_BINS=[
+  {below:10,color:'#312042',label:'ต่ำกว่า 10%',tick:'< 10'},
+  {below:25,color:'#503165',label:'10–ต่ำกว่า 25%',tick:'10'},
+  {below:50,color:'#775091',label:'25–ต่ำกว่า 50%',tick:'25'},
+  {below:75,color:'#A67BC2',label:'50–ต่ำกว่า 75%',tick:'50'},
+  {below:90,color:'#CEADE5',label:'75–ต่ำกว่า 90%',tick:'75'},
+  {below:Infinity,color:'#F0E2FA',label:'ตั้งแต่ 90%',tick:'≥ 90'},
+] as const;
+const years=(value:number)=>value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 export const INDICATORS:Record<IndicatorId,IndicatorDefinition>={
   population:{id:'population',code:'SP.POP.TOTL',label:'ประชากร',title:'ประชากรโลก',statistic:'ประชากรทั้งหมด',chartTitle:'ประชากรย้อนหลัง',unit:'คน',tableUnit:'คน',legendTitle:'ประชากร · ล้านคน',sourceUrl:'https://data.worldbank.org/indicator/SP.POP.TOTL',note:'ค่าประมาณประชากรกลางปี',accent:'#e5e5e5',bins:POPULATION_BINS,format:formatPopulation,axis:compactPopulation,
     meter:value=>value>=1e9?`${(value/1e9).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} พันล้าน`:value>=1e6?`${(value/1e6).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})} ล้าน`:formatPopulation(value)},
+  internet:{id:'internet',code:'IT.NET.USER.ZS',label:'ผู้ใช้อินเทอร์เน็ต',title:'ผู้ใช้อินเทอร์เน็ต',statistic:'ผู้ใช้อินเทอร์เน็ต',chartTitle:'การใช้อินเทอร์เน็ตย้อนหลัง',unit:'%',tableUnit:'% ของประชากร',legendTitle:'ผู้ใช้อินเทอร์เน็ต · %',sourceUrl:'https://data.worldbank.org/indicator/IT.NET.USER.ZS',note:'สัดส่วนประชากร · ข้อมูล ITU',accent:'#CEADE5',bins:INTERNET_BINS,format:value=>years(value),meter:value=>years(value),axis:value=>value.toLocaleString('en-US',{maximumFractionDigits:1})+'%'},
+  life:{id:'life',code:'SP.DYN.LE00.IN',label:'อายุคาดเฉลี่ย',title:'อายุคาดเฉลี่ย',statistic:'อายุคาดเฉลี่ยเมื่อแรกเกิด',chartTitle:'อายุคาดเฉลี่ยย้อนหลัง',unit:'ปี',tableUnit:'ปี',legendTitle:'อายุคาดเฉลี่ย · ปี',sourceUrl:'https://data.worldbank.org/indicator/SP.DYN.LE00.IN',note:'อายุคาดเฉลี่ยเมื่อแรกเกิด · รวมทุกเพศ',accent:'#A0DEC1',bins:LIFE_BINS,format:years,meter:years,axis:value=>value.toLocaleString('en-US',{maximumFractionDigits:1})+' ปี'},
   gdp:{id:'gdp',code:'NY.GDP.PCAP.KD',label:'GDP ต่อหัว',title:'GDP ต่อหัว',statistic:'GDP ต่อหัว',chartTitle:'GDP ต่อหัวย้อนหลัง',unit:'US$',tableUnit:'US$ ต่อคน',legendTitle:'GDP ต่อหัว · พัน US$',sourceUrl:'https://data.worldbank.org/indicator/NY.GDP.PCAP.KD',note:'ต่อคนต่อปี · ราคาคงที่ปี 2015',accent:'#dfcca1',bins:GDP_BINS,format:value=>money.format(value),meter:value=>money.format(value),axis:value=>value>=1000?`${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}k US$`:`${value.toLocaleString('en-US',{maximumFractionDigits:0})} US$`},
 };
 

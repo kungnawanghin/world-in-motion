@@ -5,6 +5,7 @@ import './src/space.css';
 import { INDICATORS,indicatorColors,getGDPDefinition,type GDPCurrency,type IndicatorId,type IndicatorData } from './src/indicators/indicators';
 import { loadIndicator } from './src/indicators/load-indicator';
 import {buildRankings} from './src/indicators/rankings';
+import {IndicatorSwitcher} from './src/indicators/IndicatorSwitcher';
 import {TopTen} from './src/indicators/TopTen';
 import range from './src/indicators/range.json';
 import { PopulationDetails } from './src/population/PopulationDetails';
@@ -35,17 +36,17 @@ export default function Demo(){
   const playback=useMemo(()=>createPopulationClock(range.startYear,range.endYear,range.defaultYear,setYear),[]);
   const [currency,setCurrency]=useState<GDPCurrency>('THB');
   const gdpDefinition=useMemo(()=>getGDPDefinition(currency),[currency]);
-  const indicator=layer==='gdp'?gdpDefinition:INDICATORS.population;
+  const indicator=layer==='gdp'?gdpDefinition:INDICATORS[layer==='world'?'population':layer];
   const rankingCache=useMemo(()=>{
     const result:Partial<Record<IndicatorId,ReturnType<typeof buildRankings>>>={};
-    for(const id of ['population','gdp'] as const){const dataset=datasets[id];if(dataset)result[id]=buildRankings(dataset,COUNTRIES,range.startYear,range.endYear);}
+    for(const id of ['population','gdp','life','internet'] as const){const dataset=datasets[id];if(dataset)result[id]=buildRankings(dataset,COUNTRIES,range.startYear,range.endYear);}
     return result;
   },[datasets]);
   const rankings=layer==='world'?undefined:rankingCache[layer];
   const data=layer==='world'?null:datasets[layer]??null;
   const colorCache=useMemo(()=>{
     const result:Partial<Record<IndicatorId,Uint8Array[]>>={};
-    for(const id of ['population','gdp'] as const){const dataset=datasets[id];if(dataset)result[id]=Array.from({length:range.endYear-range.startYear+1},(_,i)=>indicatorColors(dataset,COUNTRIES,INDICATORS[id],range.startYear+i));}
+    for(const id of ['population','gdp','life','internet'] as const){const dataset=datasets[id];if(dataset)result[id]=Array.from({length:range.endYear-range.startYear+1},(_,i)=>indicatorColors(dataset,COUNTRIES,INDICATORS[id],range.startYear+i));}
     return result;
   },[datasets]);
   const frames=layer==='world'?undefined:colorCache[layer];
@@ -83,8 +84,8 @@ export default function Demo(){
       <header className="space-header space-controls"><div>
         <button type="button" className="space-wordmark" onClick={()=>setPhase('intro')} title="กลับหน้าเปิด">WORLD IN MOTION<span aria-hidden="true">.</span></button>
         <h1 key={layer} className="space-view-title" ref={heading} tabIndex={-1}>{layer==='world'?'แผนที่โลก':indicator.title}{layer!=='world'&&data&&<span className="population-year">{year}</span>}</h1>
-        <p key={`${layer}-description`} className="space-view-description">{layer==='world'?'หมุนโลกแล้วคลิกประเทศเพื่อสำรวจ':layer==='gdp'?'ปรับเงินเฟ้อแล้ว · '+indicator.tableUnit+' · ราคาปี 2015':'คลิกประเทศเพื่อดูจำนวนคนและกราฟย้อนหลัง'}</p>
-        <div className="space-data-options"><div className="space-layer-switch" role="group" aria-label="เลือกมุมมองแผนที่">{(['world','population','gdp'] as const).map(id=><button key={id} type="button" aria-pressed={layer===id} onClick={()=>chooseLayer(id)}>{id==='world'?'แผนที่โลก':INDICATORS[id].label}</button>)}</div>{layer==='gdp'&&<div className="currency-switch" role="group" aria-label="เลือกสกุลเงิน">{(['THB','USD'] as const).map(unit=><button key={unit} type="button" aria-pressed={currency===unit} onClick={()=>setCurrency(unit)}>{unit==='THB'?'฿ THB':'$ USD'}</button>)}</div>}</div>
+        <p key={`${layer}-description`} className="space-view-description">{layer==='world'?'หมุนโลกแล้วคลิกประเทศเพื่อสำรวจ':layer==='gdp'?'ปรับเงินเฟ้อแล้ว · '+indicator.tableUnit+' · ราคาปี 2015':(layer==='life'||layer==='internet')?(data&&year>data.endYear?'ยังไม่มีข้อมูลปี '+year+' · ข้อมูลล่าสุด '+data.endYear:layer==='internet'?(data&&year===data.endYear&&year>data.mapYear?'ข้อมูลปี '+year+' ยังไม่ครบ · '+(rankings?.get(year)?.length??0)+' พื้นที่':'สัดส่วนประชากรที่ใช้อินเทอร์เน็ต · ITU'):'อายุคาดเฉลี่ยเมื่อแรกเกิด · รวมทุกเพศ'):'คลิกประเทศเพื่อดูจำนวนคนและกราฟย้อนหลัง'}</p>
+        <div className="space-data-options"><IndicatorSwitcher layer={layer} onSelect={chooseLayer}/>{layer==='gdp'&&<div className="currency-switch" role="group" aria-label="เลือกสกุลเงิน">{(['THB','USD'] as const).map(unit=><button key={unit} type="button" aria-pressed={currency===unit} onClick={()=>setCurrency(unit)}>{unit==='THB'?'฿ THB':'$ USD'}</button>)}</div>}</div>
       </div><button type="button" className="space-motion" aria-pressed={motion==='reduced'} onClick={()=>setMotion(current=>current==='full'?'reduced':'full')}>{motion==='full'?'หยุดหมุน':'เปิดการหมุน'}<span className={motion==='full'?'is-moving':''} aria-hidden="true"/></button></header>
       {rankings&&<TopTen rankings={rankings} year={year} indicator={indicator} selected={selected} onSelect={id=>globe.current?.selectCountry(id)} playback={playback}/>}
       <footer className={`space-footer space-controls${layer!=='world'?' space-footer--population':''}`}>
