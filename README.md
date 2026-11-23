@@ -287,3 +287,13 @@ Snapshot ปัจจุบันครอบคลุมปี 1990–2025 ม�
 - npm run check:rankings — ตรวจอันดับทั้งสี่ตัวชี้วัด
 
 แหล่งข้อมูล: [World Bank / ITU — Individuals using the Internet](https://data.worldbank.org/indicator/IT.NET.USER.ZS), [นิยามและข้อจำกัด](https://databank.worldbank.org/metadataglossary/world-development-indicators/series/IT.NET.USER.ZS), [ITU DataHub](https://datahub.itu.int/) ภายใต้ CC BY 4.0
+
+## เผยแพร่ผ่าน Vercel
+
+นำเข้า GitHub repository kungnawanghin/world-in-motion เข้า Vercel เลือกสาขา main สำหรับ Production และ Root Directory เป็นราก repo (./) ไฟล์ vercel.json กำหนด Framework เป็น Vite, Install Command เป็น npm ci, Build Command เป็น npm run build และ Output Directory เป็น dist ใช้ Node.js 24.x ตาม package.json
+
+เว็บปัจจุบันเป็น static app ไม่มี backend และไม่ต้องตั้ง Environment Variables ข้อมูลรายปี ฟอนต์ และพื้นผิวโลกถูก build เป็น assets ทั้งหมด ไม่ต้องเปิด npm run dev หรือพอร์ต 5175 บนเครื่องเพื่อให้เว็บจริงทำงาน
+
+หลังเชื่อม GitHub และ deploy สำเร็จ Vercel จะสร้าง production URL ให้ เมื่อ push ลง main จะ build และเผยแพร่เวอร์ชันใหม่อัตโนมัติ ใช้ URL ที่ Vercel แจ้งจริง ไม่กำหนดชื่อโดเมนล่วงหน้า โฟลเดอร์ .vercel/ ถูกละไว้จาก Git
+
+อ้างอิง: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite)
