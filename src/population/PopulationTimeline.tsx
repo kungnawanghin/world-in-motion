@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { PopulationClock } from './playback';
 import { RollingNumber } from './RollingNumber';
 
-export function PopulationTimeline({clock,year}:{clock:PopulationClock;year:number}){
+export function PopulationTimeline({clock,year,label='ประชากร'}:{clock:PopulationClock;year:number;label?:string}){
   const [playing,setPlaying]=useState(false);
   const input=useRef<HTMLInputElement>(null);
   const sliderId=useId();
@@ -26,12 +26,12 @@ export function PopulationTimeline({clock,year}:{clock:PopulationClock;year:numb
       current+(event.key==='PageUp'?10:event.key==='PageDown'?-10:['ArrowLeft','ArrowDown'].includes(event.key)?-1:1);
     clock.seek(next);
   }
-  return <section className="population-timeline" aria-label="ช่วงเวลาประชากร">
-    <button type="button" className="population-play" onClick={()=>clock.getFrame().playing?clock.pause():clock.play()} aria-label={playing?'หยุดเล่นเวลา':'เล่นการเปลี่ยนแปลงประชากร'} aria-pressed={playing}><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">{playing?<><rect x="5" y="4" width="3" height="12"/><rect x="12" y="4" width="3" height="12"/></>:<path d="M6 3.5 16 10 6 16.5Z"/>}</svg></button>
-    <label htmlFor={sliderId} className="interactive-globe__sr-only">สำรวจประชากรตามปี</label>
+  return <section className="population-timeline" aria-label={`ช่วงเวลา${label}`}>
+    <button type="button" className="population-play" onClick={()=>clock.getFrame().playing?clock.pause():clock.play()} aria-label={playing?'หยุดเล่นเวลา':'เล่นการเปลี่ยนแปลง'+label} aria-pressed={playing}><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">{playing?<><rect x="5" y="4" width="3" height="12"/><rect x="12" y="4" width="3" height="12"/></>:<path d="M6 3.5 16 10 6 16.5Z"/>}</svg></button>
+    <label htmlFor={sliderId} className="interactive-globe__sr-only">สำรวจ{label}ตามปี</label>
     <output className="population-time-year" htmlFor={sliderId}><RollingNumber value={String(year)} playback={clock}/></output>
     <div className="population-time-control">
-      <input ref={input} id={sliderId} type="range" min={clock.startYear} max={clock.endYear} step="any" defaultValue={clock.getFrame().position} aria-label="ปีข้อมูลประชากร" onKeyDown={keyboard} onChange={event=>clock.seek(Number(event.target.value))}/>
+      <input ref={input} id={sliderId} type="range" min={clock.startYear} max={clock.endYear} step="any" defaultValue={clock.getFrame().position} aria-label={`ปีข้อมูล${label}`} onKeyDown={keyboard} onChange={event=>clock.seek(Number(event.target.value))}/>
       <div className="population-time-ticks" aria-hidden="true"><span>{clock.startYear}</span><span>{clock.endYear}</span></div>
     </div>
   </section>;

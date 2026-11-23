@@ -1,6 +1,6 @@
 {
   "name": "world-in-motion",
-  "description": "Interactive 3D world and population explorer with World Bank data, synchronized historical playback, rolling counters, and a native WebGL globe.",
+  "description": "Interactive 3D world explorer with real World Bank population and inflation-adjusted GDP per capita, synchronized historical playback, and a native WebGL globe.",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,11 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "globe:land": "node scripts/generate-globe-land.mjs",
-    "globe:countries": "node scripts/generate-globe-countries.mjs"
+    "globe:countries": "node scripts/generate-globe-countries.mjs",
+    "data:gdp": "node scripts/refresh-gdp.mjs",
+    "check:indicators": "node scripts/check-indicators.mjs",
+    "data:exchange": "node scripts/refresh-exchange-rate.mjs",
+    "check:rankings": "node scripts/check-rankings.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

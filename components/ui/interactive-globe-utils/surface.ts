@@ -64,6 +64,8 @@ uniform sampler2D earth;
 uniform sampler2D countries;
 uniform sampler2D countryColors;
 uniform sampler2D previousCountryColors;
+uniform sampler2D metricColors;
+uniform float metricMix;
 uniform float colorMix;
 uniform float thematic;
 uniform float photoReady;
@@ -100,6 +102,7 @@ void main() {
   // Missing observations stay missing until a real annual value is reached.
   float validBlend = max(previousData.a*nextData.a,step(1.0,colorMix));
   vec3 dataColor = mix(previousData.rgb,nextData.rgb,colorMix*validBlend);
+  dataColor = mix(texture2D(metricColors,colorUV).rgb,dataColor,metricMix);
   float dataAmount = thematic * borderOpacity * isLand;
   surface = mix(surface, dataColor, dataAmount * 0.88);
   // Use a restrained tint, retaining real deserts, forests and ice underneath.
@@ -145,7 +148,7 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
   const buffer = gl.createBuffer()!; gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
   const position = gl.getAttribLocation(program, 'position'); gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-  const uniforms = Object.fromEntries(['resolution','center','radius','rotation','earth','countries','countryColors','previousCountryColors','colorMix','thematic','photoReady','hovered','selected','borderOpacity','ground','land','accent','glow'].map(name => [name, gl.getUniformLocation(program,name)]));
+  const uniforms = Object.fromEntries(['resolution','center','radius','rotation','earth','countries','countryColors','previousCountryColors','metricColors','metricMix','colorMix','thematic','photoReady','hovered','selected','borderOpacity','ground','land','accent','glow'].map(name => [name, gl.getUniformLocation(program,name)]));
   const makeTexture = (unit: number, linear: boolean) => {
     const texture = gl.createTexture()!; gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D,texture);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,linear?gl.LINEAR:gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,linear?gl.LINEAR:gl.NEAREST);
@@ -162,7 +165,26 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
   const previousColorTexture=makeTexture(3,false);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(256*4));
   gl.uniform1i(uniforms.previousCountryColors,3);gl.uniform1f(uniforms.colorMix,1);
+  const metricTexture=makeTexture(4,false);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(256*4));
+  gl.uniform1i(uniforms.metricColors,4);gl.uniform1f(uniforms.metricMix,1);
+  let metricSnapshot:Uint8Array|undefined,metricProgress=1;
   let previousColors:Uint8Array|undefined,targetColors:Uint8Array|undefined,colorProgress=1;
+  function visiblePalette(){
+    const pixels=new Uint8Array(256*4);
+    const metricEase=metricProgress*metricProgress*(3-2*metricProgress);
+    for(let i=0;i<pixels.length;i+=4){
+      const blend=(previousColors?.[i+3]&&targetColors?.[i+3]||colorProgress>=1)?colorProgress:0;
+      for(let c=0;c<3;c++){
+        const from=previousColors?.[i+c]??0,to=targetColors?.[i+c]??from;
+        let value=from+(to-from)*blend;
+        if(metricSnapshot&&metricProgress<1)value=metricSnapshot[i+c]+(value-metricSnapshot[i+c])*metricEase;
+        pixels[i+c]=Math.round(value);
+      }
+      pixels[i+3]=255;
+    }
+    return pixels;
+  }
   let externalColors=false;
   let layerOpacity=0,layerTarget=0,layerFrom=0,layerElapsed=.7;
   function targetLayer(target:number){
@@ -194,6 +216,10 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
       if(colors&&colors.length!==256*4)throw new Error('Country colors must contain 256 RGBA entries.');
       gl.useProgram(program);targetLayer(colors?1:0);
       if(colors){
+        if(previousColors&&targetColors){
+          metricSnapshot=visiblePalette();metricProgress=0;
+          gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,metricTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,256,1,0,gl.RGBA,gl.UNSIGNED_BYTE,metricSnapshot);gl.uniform1f(uniforms.metricMix,0);
+        }
         // Start from the currently visible blend when the slider moves again mid-transition.
         const from=targetColors&&previousColors?Uint8Array.from(targetColors,(value,i)=>Math.round(previousColors![i]+(value-previousColors![i])*colorProgress)):colors;
         colorProgress=targetColors?0:1;previousColors=from;targetColors=colors;
@@ -216,8 +242,9 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
         layerOpacity=layerFrom+(layerTarget-layerFrom)*ease;
         gl.uniform1f(uniforms.thematic,layerOpacity);
       }
+      if(metricProgress<1){metricProgress=immediate?1:Math.min(1,metricProgress+dt/.7);gl.uniform1f(uniforms.metricMix,metricProgress*metricProgress*(3-2*metricProgress));}
       if(!externalColors&&colorProgress<1){colorProgress=immediate?1:Math.min(1,colorProgress+dt/.18);gl.uniform1f(uniforms.colorMix,colorProgress);}
-      return layerElapsed<.7||!externalColors&&colorProgress<1;
+      return layerElapsed<.7||metricProgress<1||!externalColors&&colorProgress<1;
     },
     draw(width,height,radius,yaw,pitch,hovered,selected,centerX=width/2,centerY=height/2,borderOpacity=1) {
       if(disposed||gl.isContextLost())return;
@@ -229,6 +256,6 @@ export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, on
       gl.uniform1f(uniforms.borderOpacity,borderOpacity);
       gl.drawArrays(gl.TRIANGLES,0,6);
     },
-    dispose() { disposed=true;image.onload=null;image.onerror=null;gl.deleteTexture(earthTexture);gl.deleteTexture(countryTexture);gl.deleteTexture(colorTexture);gl.deleteTexture(previousColorTexture);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vertex);gl.deleteShader(fragment); },
+    dispose() { disposed=true;image.onload=null;image.onerror=null;gl.deleteTexture(earthTexture);gl.deleteTexture(countryTexture);gl.deleteTexture(colorTexture);gl.deleteTexture(previousColorTexture);gl.deleteTexture(metricTexture);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vertex);gl.deleteShader(fragment); },
   };
 }

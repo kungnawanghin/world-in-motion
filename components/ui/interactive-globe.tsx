@@ -129,7 +129,7 @@ export const InteractiveGlobe = forwardRef<InteractiveGlobeHandle, InteractiveGl
   return (
     <div className={['interactive-globe', className].filter(Boolean).join(' ')} style={cssVariables} data-motion={motion}>
       <canvas ref={canvasRef} className="interactive-globe__canvas" role="img" tabIndex={0}
-        aria-label={countryColors&&presentation==='explore'?'ลูกโลกแสดงจำนวนประชากรตามสีประเทศ คลิกเพื่อดูข้อมูลและกราฟย้อนหลัง':'ลูกโลกสีธรรมชาติพร้อมขอบเขตประเทศ ชี้เพื่อไฮไลต์ คลิกเพื่อซูมและเปิดข้อมูลประเทศ'}
+        aria-label={countryColors&&presentation==='explore'?'ลูกโลกแสดงข้อมูลตามสีประเทศ คลิกเพื่อดูข้อมูลและกราฟย้อนหลัง':'ลูกโลกสีธรรมชาติพร้อมขอบเขตประเทศ ชี้เพื่อไฮไลต์ คลิกเพื่อซูมและเปิดข้อมูลประเทศ'}
         aria-describedby={instructionsId} aria-details={tooltipId} />
       <div ref={tooltipRef} id={tooltipId} className="interactive-globe__tooltip" role="tooltip" hidden><strong ref={tooltipNameRef} /><span ref={tooltipNoteRef} /></div>
       <svg ref={connectorRef} className="ig-country-link" aria-hidden="true"><path ref={connectorPathRef}/><g ref={anchorDotRef}><circle r="8" className="ig-country-link__halo"/><circle r="3.5"/></g></svg>

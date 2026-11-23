@@ -1,0 +1,22 @@
+.ranking-panel{--ranking-row-height:25px;position:absolute;top:220px;bottom:130px;left:48px;z-index:8;width:260px;max-height:405px;display:flex;flex-direction:column;pointer-events:auto;color:#ccc}
+.ranking-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;padding:9px 0;border:0;border-top:1px solid #ffffff29;background:none;color:#ddd;cursor:pointer;text-align:left;font-family:inherit}
+.ranking-heading>span:first-child{display:flex;align-items:baseline;gap:11px}.ranking-heading strong{font:600 11px "Space Grotesk",sans-serif;letter-spacing:.1em;color:var(--metric-accent)}.ranking-heading>span>span{font-size:10px;color:#aaa}
+.ranking-collapse{font:18px/1 "Space Grotesk",sans-serif;color:#aaa}.ranking-heading:hover .ranking-collapse{color:#fff}
+.ranking-content{display:flex;flex-direction:column;min-height:0}.ranking-scope{display:flex;justify-content:space-between;gap:8px;margin:0 0 8px;color:#888;font-size:8px;line-height:1.5}
+.ranking-scroll{overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#444 transparent;flex-shrink:1}
+.ranking-list{position:relative;height:calc(10 * var(--ranking-row-height));list-style:none;padding:0;margin:0}
+.ranking-slot{position:absolute;inset:0 0 auto;height:var(--ranking-row-height);opacity:0;pointer-events:none;transform:translate3d(0,calc(var(--rank-slot) * var(--ranking-row-height)),0);transition:transform .42s cubic-bezier(.2,.65,.3,1),opacity .22s ease}
+.ranking-slot.is-active{opacity:1;pointer-events:auto;will-change:transform}
+.ranking-row{position:relative;isolation:isolate;display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:6px;align-items:center;width:100%;height:calc(var(--ranking-row-height) - 3px);padding:3px 5px;border:1px solid transparent;border-radius:3px;overflow:hidden;background:#07090c6b;color:#bbb;font-family:inherit;font-size:10px;cursor:pointer;text-align:left}
+.ranking-row:hover{color:#fff;border-color:#ffffff3b;background:#ffffff08}.ranking-row.is-selected{border-color:var(--metric-accent);color:#fff}
+.ranking-bar{position:absolute;left:0;top:0;bottom:0;z-index:-1;background:var(--metric-accent);opacity:.08;transition:width .42s ease}
+.ranking-number{font:10px "Space Grotesk",sans-serif;color:#999}.ranking-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.ranking-value{font:500 10px "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;color:#ddd}
+.ranking-coverage{margin:8px 0 0;color:#777;font-size:8px;line-height:1.5}
+.ranking-selected{border-top:1px solid #ffffff1a;margin-top:9px;padding-top:8px;font-size:9px;flex-shrink:0}.ranking-selected>span{color:#888;font-size:8px}.ranking-selected>button{display:flex;justify-content:space-between;gap:8px;width:100%;margin-top:4px;padding:0;border:0;background:none;color:#ddd;text-align:left;cursor:pointer;font:inherit}.ranking-selected strong{font-weight:400;color:var(--metric-accent);white-space:nowrap}.ranking-selected p{margin:4px 0 0;color:#999;font:9px "Space Grotesk",sans-serif}
+.ranking-empty{margin:15px 0;color:#aaa;font-size:11px}
+.ranking-panel[data-snap="true"] .ranking-slot,.ranking-panel[data-snap="true"] .ranking-bar{transition:none!important}
+@media(max-width:1100px){.ranking-panel{bottom:235px;max-height:380px}}
+@media(max-width:700px){.ranking-panel{left:26px;right:26px;top:auto;bottom:230px;width:auto;max-height:calc(100svh - 440px);border:1px solid #ffffff26;border-radius:7px;padding:0 12px;background:#07090cf2;backdrop-filter:blur(8px)}.ranking-heading{border-top:0}.ranking-heading[aria-expanded="true"]{padding-bottom:10px}.ranking-content{padding-bottom:12px}.ranking-selected{margin-top:7px;padding-top:7px}}
+@media(max-width:480px){.ranking-panel{left:24px;right:24px;bottom:222px;max-height:calc(100svh - 425px)}}
+@media(prefers-reduced-motion:reduce){.ranking-slot,.ranking-bar{transition:none!important;will-change:auto!important}}
+.ranking-panel{pointer-events:none}.ranking-heading,.ranking-content{pointer-events:auto}.ranking-list{overflow:hidden}

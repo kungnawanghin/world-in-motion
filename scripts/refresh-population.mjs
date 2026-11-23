@@ -1,5 +1,6 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import {updateIndicatorRange} from './update-indicator-range.mjs';
 
 const root = new URL('../', import.meta.url);
 const sourceUrl = `https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&source=2&date=1960:${new Date().getUTCFullYear()}&per_page=20000`;
@@ -36,4 +37,5 @@ const snapshot = { indicator:'SP.POP.TOTL', source:'World Bank · World Developm
   sourceUpdated:meta.lastupdated, fetchedAt:new Date().toISOString(), startYear,endYear,mapYear,series };
 await mkdir(new URL('src/population/', root), { recursive:true });
 await writeFile(new URL('src/population/population.json', root), JSON.stringify(snapshot));
+await updateIndicatorRange();
 console.log(`${Object.keys(series).length} mapped countries/territories; ${startYear}–${endYear}; map ${mapYear}: ${counts[mapYear-startYear]} areas. Saved ${fileURLToPath(new URL('src/population/population.json',root))}`);

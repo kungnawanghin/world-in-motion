@@ -1,0 +1,35 @@
+.space-app{--metric-point:#fff}
+.space-header>div{min-width:0}.space-layer-switch{max-width:100%;flex-wrap:wrap}
+.population-chart path,.population-chart circle,.population-chart line{transition:stroke .65s ease,fill .65s ease}
+.indicator-chart-enter{animation:indicator-chart-reveal .4s ease both}
+@keyframes indicator-chart-reveal{from{opacity:.2;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.indicator-legend-unit{margin:-3px 0 8px;color:#999;font-size:8px;line-height:1.5}
+.space-app[data-layer="gdp"]{--metric-point:#fff2d8}
+.space-app[data-layer="gdp"] .population-year{border-color:#b79c6259;color:#e1cda4}
+.space-app[data-layer="gdp"] .space-layer-switch button[aria-pressed="true"]{background:#d7c39b;color:#211b12}
+.space-app[data-layer="gdp"] .space-view-description{color:#b9aa8e}
+.space-app[data-layer="gdp"] .population-stat p>span{color:#d6bf90}
+.space-app[data-layer="gdp"] .population-change>span,.space-app[data-layer="gdp"] .population-chart-readout>strong{color:#dfcca1}
+.space-app[data-layer="gdp"] .indicator-legend-unit{color:#c3b28e}
+.space-app[data-layer="gdp"] .population-play{border-color:#bd9f615e;color:#e8d6b0}
+.space-app[data-layer="gdp"] .population-play:hover{background:#30291d;border-color:#bd9f61}
+.space-app[data-layer="gdp"] .population-play[aria-pressed="true"]{background:#dfcca1;color:#211b12}
+.space-app[data-layer="gdp"] .population-time-control input[type="range"]{background:linear-gradient(to right,#dfcca1 var(--timeline-progress),#ffffff36 var(--timeline-progress))}
+.space-app[data-layer="gdp"] .population-time-control input[type="range"]::-webkit-slider-thumb{background:#e8d6b0;border-color:#f5e9cf}
+.space-app[data-layer="gdp"] .population-time-control input[type="range"]::-moz-range-thumb{background:#e8d6b0;border-color:#f5e9cf}
+.space-app[data-layer="gdp"] .population-table tr[aria-current="date"]{background:#b79c621a;color:#f5e9cf}
+@media(max-width:639px){.space-app[data-layer="gdp"] .ig-country-popup--data .ig-country-card{max-height:calc(100svh - 375px);min-height:140px;padding:17px}.space-layer-switch button{padding:6px 10px}}
+@media(prefers-reduced-motion:reduce){.indicator-chart-enter{animation:none}.population-chart path,.population-chart circle,.population-chart line{transition:none}}
+
+.space-data-options{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+.space-data-options .space-layer-switch{margin-top:0}
+.currency-switch{display:flex;gap:2px;border-left:1px solid #ffffff30;padding-left:10px}
+.currency-switch button{border:0;background:none;color:#888;font:11px "Space Grotesk",sans-serif;cursor:pointer;padding:6px 7px;border-radius:4px}
+.currency-switch button[aria-pressed="true"]{color:#f5e9cf;background:#dfcca11a}
+.currency-switch button:hover{color:#fff}
+.gdp-explanation{margin:12px 0;color:#999;font-size:10px;line-height:1.75}
+.gdp-explanation p{margin:5px 0}.gdp-explanation strong{color:#d8c8aa;font-weight:500}
+.gdp-explanation summary{color:#c3b28e;cursor:pointer;font-size:9px}
+.gdp-explanation a{color:#dfcca1;text-decoration:underline}
+@media(max-width:700px){.space-data-options{gap:6px;margin-top:12px}.currency-switch{padding-left:5px}.currency-switch button{padding:6px 5px;font-size:10px}}
+.currency-switch{pointer-events:auto}
