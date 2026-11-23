@@ -1,18 +1,5 @@
 .space-app{--space-ground:#03060c;position:relative;isolation:isolate;width:100%;height:100svh;min-height:520px;overflow:hidden;background:var(--space-ground);color:#edf4f8;color-scheme:dark}
 .space-globe-stage{position:absolute;inset:0;z-index:2}
-.space-backdrop{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#03060c}
-.space-nebula{position:absolute;inset:-15%;background:radial-gradient(ellipse at 75% 27%,#142a433e,transparent 39%),radial-gradient(ellipse at 17% 78%,#102b3633,transparent 38%)}
-.space-stars{position:absolute;inset:0;width:100%;height:100%;opacity:.9}
-.space-star-bright{animation:space-twinkle 7s ease-in-out infinite alternate}
-@keyframes space-twinkle{from{opacity:.3}to{opacity:.9}}
-.space-planet{position:absolute;border-radius:50%;box-shadow:inset -10px -8px 17px #000b,0 0 20px #23354819;opacity:.65}
-.space-planet--moon{width:58px;height:58px;left:8%;top:25%;background:radial-gradient(circle at 31% 30%,#333a48 0 8%,transparent 9%),radial-gradient(circle at 56% 58%,#252b35 0 12%,transparent 13%),radial-gradient(circle at 25% 23%,#81858a,#373d47 48%,#080c13 85%)}
-.space-planet--rings{width:55px;height:55px;right:8%;top:69%;background:repeating-linear-gradient(174deg,#69717a17 0 3px,#c6bba917 4px 7px),radial-gradient(circle at 28% 25%,#aaa596,#5a605f 45%,#0a111a 80%);transform:rotate(-18deg)}
-.space-planet--rings::before{content:'';position:absolute;left:-45%;top:31%;width:190%;height:39%;border:8px solid #adb1af40;border-left-width:13px;border-right-width:13px;border-top-color:#8a949718;border-radius:50%;transform:rotate(-13deg);box-shadow:0 2px 0 #b2bbb41c}
-.space-rock{position:absolute;display:block;clip-path:polygon(22% 5%,64% 0,92% 25%,100% 62%,74% 94%,34% 100%,5% 75%,0 36%);border-radius:37%;background:radial-gradient(ellipse at 33% 25%,#141a2280 0 7%,transparent 10%),radial-gradient(ellipse at 65% 64%,#0a1016aa 0 10%,transparent 14%),linear-gradient(136deg,#6b6c6880,#353d47 37%,#111923 70%,#060a10);box-shadow:inset 3px 4px 5px #a5afa51a,inset -8px -7px 11px #000b;opacity:.58;animation:space-rock-drift 60s ease-in-out infinite alternate;will-change:transform}
-.space-rock::after{content:'';position:absolute;inset:0;background:linear-gradient(34deg,transparent 40%,#7c87881a 42%,transparent 47%),linear-gradient(135deg,transparent 54%,#03080d66 55%,transparent 63%);clip-path:polygon(0 0,62% 22%,100% 0,77% 66%,100% 100%,29% 81%,0 100%,22% 40%)}
-@keyframes space-rock-drift{from{transform:translate3d(-4px,7px,0) rotate(-5deg)}to{transform:translate3d(12px,-14px,0) rotate(12deg)}}
-.space-edge-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,#0003 90%)}
 .launch-screen{position:absolute;inset:0;z-index:20;display:grid;place-items:center;text-align:center;overflow:hidden}
 .launch-shade{position:absolute;inset:0;background:linear-gradient(180deg,#02050cb3,transparent 34%,#02050c30 65%,#02050cc4),radial-gradient(ellipse at center,#01050b42,transparent 70%);transition:opacity 1.3s ease;pointer-events:none}
 .launch-content{position:relative;z-index:1;width:100%;padding:30px 22px 50px}
@@ -64,13 +51,12 @@
 .space-app .ig-country-card__back:hover{background:#123747;border-color:#61b5bf}
 .space-app .ig-country-link path{opacity:.8}
 .space-app .interactive-globe__tooltip{background:#091522;border-color:#365268;box-shadow:0 9px 28px #0005}
-.space-app[data-motion="reduced"] .space-rock,.space-app[data-motion="reduced"] .space-star-bright{animation-play-state:paused}
 .space-app[data-motion="reduced"] .launch-title,.space-app[data-motion="reduced"] .launch-action,.space-app[data-motion="reduced"] .launch-shade,.space-app[data-motion="reduced"] .launch-bottom{transition:none}
 .space-app[data-motion="reduced"] .space-controls{animation:none}
-@media(max-width:700px){.space-header{padding:26px}.space-footer{padding:0 26px 27px}.space-header h1{font-size:27px}.space-planet--moon{left:5%;top:22%;width:42px;height:42px}.space-planet--rings{right:7%;top:76%;width:38px;height:38px}.space-rock--0{opacity:.35}.space-rock--2{opacity:.35}.launch-title{font-size:clamp(48px,9.5vw,80px);letter-spacing:.035em;text-indent:.035em}.launch-action{margin-top:35px}}
-@media(max-width:480px){.space-app{min-height:500px}.space-header{padding:24px;gap:12px}.space-wordmark{font-size:9px;letter-spacing:.8px}.space-header h1{font-size:26px;margin-top:16px}.space-header p{font-size:10px}.space-motion{padding:8px 12px;gap:8px;font-size:10px}.space-footer{padding:0 24px 25px;gap:14px}.space-selection h2{font-size:20px}.space-selection>span,.space-selection>p{font-size:10px}.space-country-control{gap:12px}.space-country-control select{width:145px;font-size:11px}.space-reset{font-size:10px}.launch-content{padding:24px 16px 36px}.launch-title{font-size:clamp(39px,12vw,56px);letter-spacing:.035em;text-indent:.035em}.launch-title span+span{margin-top:10px}.launch-start{font-size:12px;padding-left:20px;min-width:169px}.launch-bottom{font-size:9px;bottom:29px}.space-planet--rings{opacity:.4}.space-rock--0{width:34px!important;height:34px!important;left:3%!important}.space-rock--1{opacity:.35}}
+@media(max-width:700px){.space-header{padding:26px}.space-footer{padding:0 26px 27px}.space-header h1{font-size:27px}.launch-title{font-size:clamp(48px,9.5vw,80px);letter-spacing:.035em;text-indent:.035em}.launch-action{margin-top:35px}}
+@media(max-width:480px){.space-app{min-height:500px}.space-header{padding:24px;gap:12px}.space-wordmark{font-size:9px;letter-spacing:.8px}.space-header h1{font-size:26px;margin-top:16px}.space-header p{font-size:10px}.space-motion{padding:8px 12px;gap:8px;font-size:10px}.space-footer{padding:0 24px 25px;gap:14px}.space-selection h2{font-size:20px}.space-selection>span,.space-selection>p{font-size:10px}.space-country-control{gap:12px}.space-country-control select{width:145px;font-size:11px}.space-reset{font-size:10px}.launch-content{padding:24px 16px 36px}.launch-title{font-size:clamp(39px,12vw,56px);letter-spacing:.035em;text-indent:.035em}.launch-title span+span{margin-top:10px}.launch-start{font-size:12px;padding-left:20px;min-width:169px}.launch-bottom{font-size:9px;bottom:29px}}
 @media (max-height:560px) and (min-width:701px){.space-header{padding:23px 32px}.space-footer{padding:0 32px 23px}.space-header h1{font-size:24px;margin-top:12px}.launch-title{font-size:clamp(52px,8vw,95px)}.launch-action{margin-top:25px}.launch-content{padding-bottom:20px}.launch-bottom{bottom:18px}}
-@media(prefers-reduced-motion:reduce){.space-rock,.space-star-bright,.space-controls{animation:none!important}.launch-title,.launch-action,.launch-shade,.launch-bottom,.launch-start{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.space-controls{animation:none!important}.launch-title,.launch-action,.launch-shade,.launch-bottom,.launch-start{transition:none!important}}
 
 /* Space launch and exploration theme. */
 

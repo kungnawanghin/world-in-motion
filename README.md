@@ -16,7 +16,7 @@
 - **เลขมิเตอร์ทีละหลัก** — จำนวนประชากรและปีบนเส้นเวลาใช้วงล้อแยกแต่ละหลัก เมื่อกดหยุดจะจบที่ค่ารายปีจริงทันที
 - **กราฟและตารางย้อนหลัง** — ชี้กราฟเพื่ออ่านค่ารายปี ใช้คีย์บอร์ดได้ และเปิดตารางจำนวนประชากรเต็มได้
 - **เปลี่ยนมุมมองอย่างนุ่มนวล** — ผสมสีพื้นผิวจริงกับสีประชากรประมาณ 700 ms สลับกลับกลางทางได้โดยคงมุมกล้องและประเทศที่เลือก
-- **ธีมอวกาศ** — UI ดำขาว ฟอนต์ Space Grotesk + IBM Plex Sans Thai พื้นหลังดาว ดาวเคราะห์ และเศษอุกกาบาตจาก SVG/CSS
+- **ธีมอวกาศ** — UI ดำขาว ฟอนต์ Space Grotesk + IBM Plex Sans Thai พื้นหลังดาว 3 ระยะ ฝุ่นอวกาศลอยช้า และดาวตกสุ่มจาก SVG/CSS
 - **การควบคุม** — ลากหมุนพร้อมแรงเฉื่อย เลื่อนล้อหรือ pinch เพื่อซูม เลือกประเทศจากรายการ และปิดการ์ดด้วย Escape
 
 ## เริ่มใช้งาน
@@ -105,7 +105,7 @@ React 19 · TypeScript · Tailwind CSS 4 · Vite 8 · native WebGL · SVG/CSS ·
 components/ui/
   interactive-globe.tsx                 React component และ ref API
   interactive-globe.css                 ลูกโลก tooltip และการ์ดประเทศ
-  space-backdrop.tsx                    พื้นหลังอวกาศ SVG/CSS
+  space-backdrop.tsx                    ดาวหลายชั้น parallax และดาวตกสุ่ม
   interactive-globe-utils/
     globe.ts                            กล้อง pointer inertia และ frame loop
     surface.ts                          WebGL shader, lookup สี และ fade มุมมอง
@@ -183,3 +183,11 @@ export function GlobeView() {
 - [Natural Earth](https://www.naturalearthdata.com/) ผ่าน [world-atlas](https://github.com/topojson/world-atlas): เส้นขอบ countries-50m ข้อมูล Natural Earth เป็น public domain
 - [ภาพพื้นผิวจาก Three.js examples](https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg): ใช้เฉพาะไฟล์ภาพ ไม่ได้ใช้ Three.js เป็นตัววาด
 - [Space Grotesk](https://github.com/floriankarsten/space-grotesk) และ [IBM Plex Sans Thai](https://github.com/IBM/plex): ฟอนต์ภายใต้ SIL Open Font License ใบอนุญาตรวมอยู่ใน `src/assets/fonts/`
+
+## พื้นหลังอวกาศ
+
+ดาว SVG 298 ดวงแบ่ง 3 ระยะ ขยับตามเมาส์ไม่เกิน 7 px แนวนอน/5 px แนวตั้ง ฝุ่นอวกาศเป็น radial gradients สองชั้นที่เลื่อนและหมุนช้ามากผ่าน CSS transform ไม่มี blur/filter ขนาดใหญ่ และไม่มี Canvas หรือไฟล์ภาพเพิ่ม
+
+ดาวตกครั้งละดวงปรากฏแบบสุ่มทุก 30–70 วินาที บริเวณขอบจอ และผ่านไปในประมาณ 0.8–1 วินาที ไม่มีเสียง ไม่ไล่เล่นเหตุการณ์ที่พลาดไประหว่างซ่อนแท็บ เอฟเฟกต์หยุดเมื่อซ่อนแท็บ หลุดจอ หรือเปิดโหมดลดการเคลื่อนไหว และไม่เปิด parallax บนจอสัมผัส
+
+`SpaceBackdrop` ใช้ React.memo เพื่อไม่วาด star DOM ใหม่ตามตัวเลขรายปี JavaScript อัปเดตตำแหน่งแค่เมื่อขยับเมาส์ (รวม event ด้วย RAF) และเมื่อตั้ง/เล่นดาวตก แอนิเมชันต่อเนื่องของฝุ่นและดาวใช้ CSS ที่ transform/opacity เท่านั้น รูปแบบอยู่ใน `components/ui/space-backdrop.css`

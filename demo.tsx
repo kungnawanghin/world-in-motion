@@ -53,7 +53,7 @@ export default function Demo(){
   const retry=()=>setAttempt(n=>n+1);
 
   return <main className="space-app" data-phase={phase} data-motion={motion} data-layer={layer}>
-    <SpaceBackdrop/>
+    <SpaceBackdrop motion={motion}/>
     <div className="space-globe-stage" inert={phase!=='main'}>
       <InteractiveGlobe ref={globe} theme={SPACE_THEME} style={GLOBE_STYLE} motion={motion} countryColors={colors} renderCountryDetails={layer==='population'?country=>population&&playback?<PopulationDetails data={population} iso3={country.iso3} name={country.name} year={selectedYear} playback={playback}/>:<div className="population-details" role="status">{dataError?<><p>โหลดข้อมูลประชากรไม่สำเร็จ</p><button onClick={retry}>ลองอีกครั้ง</button></>:<p>กำลังโหลดข้อมูลประชากร…</p>}</div>:undefined} presentation={phase==='intro'?'intro':'explore'} onReady={handleReady} onEnterComplete={finishEntrance} onSelect={setSelected}/>
     </div>
