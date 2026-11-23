@@ -1,5 +1,7 @@
 # WORLD IN MOTION
 
+**เว็บจริง: [world-in-motion-six.vercel.app](https://world-in-motion-six.vercel.app/)**
+
 เว็บแอปสำรวจโลกสามมิติผ่านข้อมูลประชากร GDP ต่อหัวแบบปรับเงินเฟ้อ อายุคาดเฉลี่ย และผู้ใช้อินเทอร์เน็ต สร้างด้วย React, TypeScript และ native WebGL บน Canvas เดียว พร้อมข้อมูลรายปีจริงจาก World Bank
 
 เริ่มจากลูกโลกสีธรรมชาติ ใช้แถบสามช่องเพื่อสลับมุมมองและเลือกหมวดข้อมูล เลือกประเทศ เลื่อนปี หรือเล่นเวลาแบบต่อเนื่อง ดูแนวโน้มย้อนหลัง ตารางข้อมูล และ Top 10 ในหน้าเดียว สลับหัวข้อแล้วคงประเทศ กล้อง และปีเดิม พร้อมสลับ GDP ระหว่างบาทกับดอลลาร์
@@ -290,10 +292,46 @@ Snapshot ปัจจุบันครอบคลุมปี 1990–2025 ม�
 
 ## เผยแพร่ผ่าน Vercel
 
-นำเข้า GitHub repository kungnawanghin/world-in-motion เข้า Vercel เลือกสาขา main สำหรับ Production และ Root Directory เป็นราก repo (./) ไฟล์ vercel.json กำหนด Framework เป็น Vite, Install Command เป็น npm ci, Build Command เป็น npm run build และ Output Directory เป็น dist ใช้ Node.js 24.x ตาม package.json
+เว็บจริง: **[https://world-in-motion-six.vercel.app/](https://world-in-motion-six.vercel.app/)**
+จัดการโปรเจกต์: [Vercel Dashboard](https://vercel.com/kungnawanghin/world-in-motion)
+Source: [kungnawanghin/world-in-motion](https://github.com/kungnawanghin/world-in-motion) · Production branch: **main**
 
-เว็บปัจจุบันเป็น static app ไม่มี backend และไม่ต้องตั้ง Environment Variables ข้อมูลรายปี ฟอนต์ และพื้นผิวโลกถูก build เป็น assets ทั้งหมด ไม่ต้องเปิด npm run dev หรือพอร์ต 5175 บนเครื่องเพื่อให้เว็บจริงทำงาน
+### ตั้งค่าครั้งแรก
 
-หลังเชื่อม GitHub และ deploy สำเร็จ Vercel จะสร้าง production URL ให้ เมื่อ push ลง main จะ build และเผยแพร่เวอร์ชันใหม่อัตโนมัติ ใช้ URL ที่ Vercel แจ้งจริง ไม่กำหนดชื่อโดเมนล่วงหน้า โฟลเดอร์ .vercel/ ถูกละไว้จาก Git
+1. เข้าบัญชี Vercel แล้วเลือก **Create New → Project**
+2. Import GitHub repository **kungnawanghin/world-in-motion**
+3. ใช้ Root Directory เป็น **./** และตรวจค่าด้านล่าง ซึ่งกำหนดไว้ในไฟล์ vercel.json และ package.json
+4. กด **Deploy** หาก Vercel ขอรหัสยืนยัน ให้เจ้าของบัญชียืนยันในหน้า Vercel
+5. รอจนสถานะ **Ready / Deployed to Production** แล้วเปิดลิงก์ Production ที่ Vercel แสดง
+
+| การตั้งค่า | ค่า |
+| --- | --- |
+| Application / Framework Preset | Vite |
+| Production Branch | main |
+| Root Directory | ./ |
+| Node.js | 24.x |
+| Install Command | npm ci |
+| Build Command | npm run build |
+| Output Directory | dist |
+| Environment Variables | ไม่จำเป็นสำหรับเวอร์ชันปัจจุบัน |
+
+โปรเจกต์ปัจจุบันเชื่อม GitHub และเผยแพร่แล้ว ใช้ลิงก์เว็บจริงด้านบนได้ทันที เมื่อนำ repo ไป deploy เป็นโปรเจกต์ใหม่ Vercel อาจให้ URL คนละชื่อ ให้ใช้ URL ที่ระบบแจ้งจริง
+
+### อัปเดตเว็บรอบถัดไป
+
+ตรวจงานใน D:\world-in-motion แล้ว push การเปลี่ยนแปลงลง main:
+
+```sh
+npm run build
+git add <ไฟล์ที่แก้>
+git commit -m "Describe the update"
+git push origin main
+```
+
+Vercel จะดึง commit ใหม่มา build และเผยแพร่ให้อัตโนมัติ โดยใช้ลิงก์ Production เดิม ตรวจสถานะและ Build Logs ได้ในแท็บ Deployments ของโปรเจกต์ หาก build ไม่ผ่าน ให้ดูข้อผิดพลาด แก้ในโปรเจกต์ แล้ว push อีกครั้ง
+
+เว็บเป็น static app ไม่มี backend ข้อมูลรายปี ฟอนต์ และพื้นผิวโลกถูก build เป็น assets ทั้งหมด ผู้เข้าชมเปิดเว็บได้โดยไม่ต้องให้เจ้าของเปิด VS Code, npm run dev หรือพอร์ต 5175 ทิ้งไว้ ข้อมูล World Bank เป็น snapshot ใน repo การ deploy ไม่ได้ดึงข้อมูลใหม่เอง ต้องรันสคริปต์ data: ที่ต้องการแล้ว commit snapshot ใหม่เมื่อจะอัปเดตข้อมูล
+
+โฟลเดอร์ .vercel/ และไฟล์ .env ถูกละไว้จาก Git ตาม .gitignore
 
 อ้างอิง: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite)
