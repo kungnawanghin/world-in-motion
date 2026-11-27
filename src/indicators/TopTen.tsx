@@ -8,7 +8,7 @@ import './rankings.css';
 export function TopTen({rankings,year,indicator,selected,onSelect,playback}:{
   rankings:ReadonlyMap<number,RankedCountry[]>;year:number;indicator:IndicatorDefinition;selected:Country|null;onSelect:(id:string)=>void;playback:PopulationClock;
 }){
-  const [expanded,setExpanded]=useState(()=>!matchMedia('(max-width:700px)').matches);
+  const [expanded,setExpanded]=useState(()=>!matchMedia('(max-width:1024px), (pointer:coarse)').matches);
   const root=useRef<HTMLElement>(null),contentId=useId();
   const rows=rankings.get(year)??[],top=rows.slice(0,10);
   const current=new Map(rows.map(row=>[row.country.id,row]));
@@ -32,7 +32,7 @@ export function TopTen({rankings,year,indicator,selected,onSelect,playback}:{
     });
     return()=>{unsubscribe();if(reset)cancelAnimationFrame(reset);};
   },[playback]);
-  function select(id:string){onSelect(id);if(matchMedia('(max-width:700px)').matches)setExpanded(false);}
+  function select(id:string){onSelect(id);if(matchMedia('(max-width:1024px), (pointer:coarse)').matches)setExpanded(false);}
   return <aside ref={root} className="ranking-panel" data-year={year} aria-label={'Top 10 '+indicator.label}>
     <button type="button" className="ranking-heading" aria-expanded={expanded} aria-controls={contentId} onClick={()=>setExpanded(open=>!open)}>
       <span><strong>TOP 10</strong><span>{indicator.label}</span></span><span className="ranking-collapse" aria-hidden="true">{expanded?'−':'+'}</span>

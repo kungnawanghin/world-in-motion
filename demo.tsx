@@ -14,6 +14,7 @@ import { PopulationTimeline } from './src/population/PopulationTimeline';
 import { createPopulationClock } from './src/population/playback';
 import './src/population/population.css';
 import './src/indicators/indicators.css';
+import './src/responsive.css';
 
 const countries=[...COUNTRIES].sort((a,b)=>a.name.localeCompare(b.name,'th'));
 const SPACE_THEME:GlobeTheme={ground:'#03060c',land:'#666666',arc:'#f5f5f5',glow:'#559bd0',text:'#f2f2f2',muted:'#999999'};
@@ -69,7 +70,7 @@ export default function Demo(){
   const retry=()=>setAttempt(n=>n+1);
   const chooseLayer=(next:Layer)=>{if(next===layer)return;playback.pause();setLayer(next);};
   const dataError=layer!=='world'&&!!errors[layer];
-  return <main className="space-app" data-phase={phase} data-motion={motion} data-layer={layer} style={{'--metric-accent':indicator.accent} as CSSProperties}>
+  return <main className="space-app" data-phase={phase} data-motion={motion} data-layer={layer} data-country-selected={!!selected} style={{'--metric-accent':indicator.accent} as CSSProperties}>
     <SpaceBackdrop motion={motion}/>
     <div className="space-globe-stage" inert={phase!=='main'}>
       <InteractiveGlobe ref={globe} theme={SPACE_THEME} style={GLOBE_STYLE} motion={motion} countryColors={colors} renderCountryDetails={layer!=='world'?country=>data?<PopulationDetails data={data} iso3={country.iso3} name={country.name} year={year} playback={playback} indicator={indicator}/>:<div className="population-details" role="status">{dataError?<><p>โหลดข้อมูล{indicator.label}ไม่สำเร็จ</p><button onClick={retry}>ลองอีกครั้ง</button></>:<p>กำลังโหลดข้อมูล{indicator.label}…</p>}</div>:undefined} presentation={phase==='intro'?'intro':'explore'} onReady={handleReady} onEnterComplete={finishEntrance} onSelect={setSelected}/>

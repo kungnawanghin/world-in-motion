@@ -64,19 +64,23 @@ export const InteractiveGlobe = forwardRef<InteractiveGlobeHandle, InteractiveGl
     if(!anchor||!visible)return;
     const {width,height,x,y}=anchor;
     const dataLayer=!!latest.current.countryColors;
+    const compact=width<=1024||matchMedia('(pointer:coarse)').matches;
+    const landscape=compact&&width>height&&height<600;
     const cardWidth=popupSize.current.width,cardHeight=popupSize.current.height;
     const clamp=(n:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,n));
     let px:number,py:number,endX:number,endY:number,path:string;
-    if(width<640){
+    if(width<640&&!landscape){
       px=clamp(x-cardWidth/2,16,width-cardWidth-16);
-      py=clamp(height-cardHeight-(dataLayer?272:height<680?104:120),138,Math.max(138,height-cardHeight-16));
+      const minTop=dataLayer?190:138;
+      py=clamp(height-cardHeight-(dataLayer?256:height<680?104:120),minTop,Math.max(minTop,height-cardHeight-16));
       endX=px+cardWidth/2;endY=py-9;
       path=`M ${x} ${y} C ${x} ${y+32}, ${endX} ${endY-32}, ${endX} ${endY}`;
     }else{
-      const rightSide=x+76+cardWidth+24<=width;
-      px=clamp(rightSide?x+76:x-cardWidth-76,24,width-cardWidth-24);
-      const maxTop=Math.max(20,height-cardHeight-(dataLayer?160:height>600?124:20));
-      const minTop=Math.min(height>600?140:20,maxTop);
+      const gap=compact?36:76;
+      const rightSide=landscape||x+gap+cardWidth+24<=width;
+      px=landscape?width-cardWidth-16:clamp(rightSide?x+gap:x-cardWidth-gap,24,width-cardWidth-24);
+      const maxTop=Math.max(20,height-cardHeight-(landscape?68:compact&&dataLayer?240:dataLayer?160:height>600?124:20));
+      const minTop=Math.min(landscape?82:compact?180:height>600?140:20,maxTop);
       py=clamp(y-cardHeight*.43,minTop,maxTop);
       endX=rightSide?px-8:px+cardWidth+8;endY=clamp(y,py+35,py+cardHeight-35);
       const direction=rightSide?1:-1;

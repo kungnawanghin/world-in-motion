@@ -1,0 +1,72 @@
+/* Shared mobile/tablet rules come last so all indicators use one card size. */
+html,body,#root{background:#020409}
+.ig-country-card__expand{display:none}
+@media(max-width:1024px),(pointer:coarse){
+  .space-app{height:100svh;min-height:0;background:#020409}
+  .space-header{padding-top:max(20px,env(safe-area-inset-top));padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+  .space-backdrop{background:#020409;isolation:isolate}
+  .space-star-depth{opacity:1}
+  .space-dust{opacity:.45}
+  .space-app .ig-country-popup,.space-app .ig-country-popup--data{width:min(280px,calc(100% - 32px));perspective:none}
+  .space-app .interactive-globe .ig-country-popup .ig-country-card{padding:12px 14px;min-height:0;max-height:min(300px,38svh,calc(100svh - 446px));border-radius:13px;transform:none;box-shadow:0 10px 28px #0008;background:#101113f5;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-top:10px}
+  .space-app .interactive-globe .ig-country-popup .ig-country-card[data-expanded="true"]{max-height:min(460px,calc(100svh - 446px))}
+  .space-app .ig-country-card__eyebrow{font-size:8px;line-height:13px}
+  .space-app .ig-country-card__eyebrow span{font-size:8px;line-height:13px}
+  .space-app .ig-country-card__heading{display:flex;align-items:center;gap:9px;padding-right:3px}
+  .space-app .interactive-globe .ig-country-popup .ig-country-card h2{margin:5px 0 0;font-size:18px;line-height:1.3;flex:1;min-width:0}
+  .space-app .ig-country-card__expand{display:block;flex-shrink:0;border:1px solid #ffffff28;border-radius:5px;padding:5px 7px;margin-top:6px;background:#ffffff08;color:#ccc;font:9px/1.4 "IBM Plex Sans Thai",sans-serif;cursor:pointer}
+  .space-app .ig-country-card__close{width:30px;height:30px;top:7px;right:8px}
+  .space-app .ig-country-card__eyebrow{padding-right:30px}
+  .space-app .ig-country-card__english{font-size:9px;margin-top:3px;line-height:1.4}
+  .space-app .ig-country-card__map{height:58px;margin:8px 0}
+  .space-app .ig-country-card__region{padding-top:7px;font-size:9px}
+  .space-app .ig-country-card__back{margin-top:8px;padding:6px 9px;font-size:10px}
+  .space-app .population-details{margin-top:10px}
+  .space-app .population-stat strong{font-size:23px;letter-spacing:-.4px}
+  .space-app .population-stat>span{font-size:9px}
+  .space-app .population-stat>p{margin-top:2px}
+  .space-app .population-change{margin-top:4px;font-size:9px}
+  .space-app .population-change>span{font-size:10px}
+  .space-app .population-chart{margin-top:7px}
+  .space-app .population-chart svg{height:68px}
+  .space-app .population-chart-readout{font-size:9px;gap:8px}
+  .space-app .ig-country-card[data-expanded="false"] :is(.ig-country-card__english,.population-stat small,.population-chart-heading,.population-chart-years,.population-table,.population-source,.gdp-explanation,.life-explanation,.internet-explanation){display:none}
+  .space-app .ig-country-card[data-expanded="true"] .population-chart svg{height:95px}
+  .ranking-panel{top:auto;bottom:230px;left:20px;right:auto;width:260px;max-height:min(380px,calc(100svh - 440px));padding:0 10px;border:1px solid #ffffff26;border-radius:7px;background:#090b0ef5;backdrop-filter:none}
+  .ranking-heading{border-top:0}
+  .ranking-content{padding-bottom:10px}
+}
+@media(max-width:700px){
+  .space-header{display:block;padding-left:18px;padding-right:18px;gap:10px}
+  .space-header>div{width:100%}
+  .space-motion{position:absolute;right:18px;top:max(20px,env(safe-area-inset-top))}
+  .space-header h1{font-size:24px;margin-top:14px}
+  .space-header p{font-size:9px}
+  .space-wordmark{font-size:9px}
+  .space-motion{font-size:9px;padding:8px 10px;gap:6px}
+  .space-data-options{margin-top:10px;gap:6px}
+  .space-footer{padding-left:18px;padding-right:18px;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+  .ranking-panel{left:18px;right:18px;width:auto;bottom:214px;max-height:min(350px,calc(100svh - 420px))}
+  .space-footer--population{gap:14px}
+  .space-app .space-country-control select{width:132px}
+}
+@media(max-height:600px) and (orientation:landscape){
+  .space-header{padding:12px 16px}
+  .space-header h1{font-size:19px;margin:6px 0 2px}
+  .space-header .space-view-description,.space-wordmark{display:none}
+  .space-data-options{margin-top:6px}
+  .space-footer{padding:0 16px 12px}
+  .space-footer--population{grid-template-columns:minmax(0,1fr) 140px;gap:9px}
+  .space-footer--population .population-legend{width:220px}
+  .space-app[data-country-selected="true"] .population-legend{display:none}
+  .space-footer--population .space-country-control{grid-column:2;grid-row:1/3;gap:7px}
+  .space-country-control label>span{display:none}
+  .space-country-control select{padding:6px 8px}
+  .population-timeline{grid-column:1;grid-row:2}
+  .space-app .interactive-globe .ig-country-popup .ig-country-card{max-height:calc(100svh - 158px)}
+  .space-app .interactive-globe .ig-country-popup .ig-country-card[data-expanded="true"]{max-height:calc(100svh - 158px)}
+  .ranking-panel{top:105px;bottom:auto;left:16px;right:auto;width:240px;max-height:calc(100svh - 180px)}
+  .space-app .population-chart svg{height:52px}
+}
+
+@media(max-width:360px){.space-layer-switch>button{padding-left:7px;padding-right:7px}.currency-switch button{padding-left:3px;padding-right:3px;font-size:9px}.space-header h1{font-size:22px}}

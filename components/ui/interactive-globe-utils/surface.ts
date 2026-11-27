@@ -82,7 +82,8 @@ void main() {
   float d2 = dot(p, p);
   if (d2 > 1.0) {
     float halo = exp(-(sqrt(d2) - 1.0) * 49.0) * 0.16;
-    gl_FragColor = vec4(glow, halo);
+    // Premultiplied output keeps transparent pixels black on mobile compositors.
+    gl_FragColor = vec4(glow * halo, halo);
     return;
   }
   vec3 normal = vec3(p, sqrt(max(0.0, 1.0 - d2)));
@@ -134,7 +135,7 @@ export type Surface = {
 };
 
 export function createSurface(canvas: HTMLCanvasElement, theme: SurfaceTheme, onReady: () => void): Surface {
-  const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true, powerPreference: 'low-power' });
+  const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true, powerPreference: 'low-power' });
   if (!gl) throw new Error('ไม่สามารถเปิดภาพสามมิติได้ กรุณาตรวจการตั้งค่า WebGL ของเบราว์เซอร์');
   const compile = (kind: number, source: string) => {
     const shader = gl.createShader(kind)!; gl.shaderSource(shader, source); gl.compileShader(shader);

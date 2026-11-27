@@ -1,10 +1,11 @@
-import { forwardRef, useId, type PointerEvent, type ReactNode } from 'react';
+import { forwardRef, useId, useState, type PointerEvent, type ReactNode } from 'react';
 import { COUNTRY_GEOMETRY } from './countries';
 import type { Country } from './surface';
 
 type Props = { country: Country; onClose: () => void; details?: ReactNode };
 
 export const CountryPopup = forwardRef<HTMLDivElement, Props>(function CountryPopup({ country, onClose, details }, ref) {
+  const [expanded,setExpanded]=useState(false);
   const titleId = useId(), gradientId = useId();
   const geometry = COUNTRY_GEOMETRY[country.index - 1];
   const [left, top, right, bottom] = geometry.bounds;
@@ -23,10 +24,10 @@ export const CountryPopup = forwardRef<HTMLDivElement, Props>(function CountryPo
   }
   return (
     <div ref={ref} className={`ig-country-popup${details?' ig-country-popup--data':''}`} data-visible="false">
-      <div className="ig-country-card" role="dialog" aria-modal="false" aria-labelledby={titleId} onPointerMove={tilt} onPointerLeave={releaseTilt}>
+      <div className="ig-country-card" data-expanded={expanded} role="dialog" aria-modal="false" aria-labelledby={titleId} onPointerMove={tilt} onPointerLeave={releaseTilt}>
         <button type="button" className="ig-country-card__close" aria-label="ปิดข้อมูลประเทศ" onClick={onClose}>×</button>
         <div className="ig-country-card__eyebrow">ประเทศที่เลือก {country.iso3&&<span>{country.iso3}</span>}</div>
-        <h2 id={titleId}>{country.name}</h2>
+        <div className="ig-country-card__heading"><h2 id={titleId}>{country.name}</h2>{details&&<button type="button" className="ig-country-card__expand" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?'ย่อข้อมูล':'ดูเพิ่มเติม'}</button>}</div>
         {country.name!==country.englishName && <p className="ig-country-card__english">{country.englishName}</p>}
         {details ?? <figure className="ig-country-card__map" aria-label={`รูปร่างแผนที่ ${country.name}`}>
           <svg viewBox={viewBox} aria-hidden="true" preserveAspectRatio="xMidYMid meet">

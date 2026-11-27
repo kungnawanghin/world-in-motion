@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import './space-backdrop.css';
 
 const randomAt=(seed:number)=>{const value=Math.sin(seed*127.1+311.7)*43758.5453;return value-Math.floor(value);};
@@ -8,6 +8,7 @@ const layers=[{name:'far',count:180,radius:.48},{name:'middle',count:90,radius:.
 
 /** Static SVG stars and composited CSS dust; JS only runs on input or rare meteor events. */
 export const SpaceBackdrop=memo(function SpaceBackdrop({motion='full'}:{motion?:'full'|'reduced'}){
+  const [size,setSize]=useState({width:1600,height:1000});
   const root=useRef<HTMLDivElement>(null),meteor=useRef<HTMLDivElement>(null);
   useEffect(()=>{
     const element=root.current,streak=meteor.current;if(!element||!streak)return;
@@ -61,7 +62,7 @@ export const SpaceBackdrop=memo(function SpaceBackdrop({motion='full'}:{motion?:
         element!.style.setProperty('--space-x',`${pointerX.toFixed(2)}px`);element!.style.setProperty('--space-y',`${pointerY.toFixed(2)}px`);
       });
     }
-    const resize=new ResizeObserver(()=>{box=element.getBoundingClientRect();});resize.observe(element);
+    const resize=new ResizeObserver(()=>{box=element.getBoundingClientRect();const width=Math.max(1,Math.round(box.width)+36),height=Math.max(1,Math.round(box.height)+36);setSize(previous=>previous.width===width&&previous.height===height?previous:{width,height});});resize.observe(element);
     const visibility=new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;syncActivity();});visibility.observe(element);
     document.addEventListener('visibilitychange',syncActivity);media.addEventListener('change',syncActivity);
     surface.addEventListener('pointermove',move,{passive:true});surface.addEventListener('pointerleave',resetPointer,{passive:true});
@@ -74,8 +75,8 @@ export const SpaceBackdrop=memo(function SpaceBackdrop({motion='full'}:{motion?:
   },[motion]);
   return <div ref={root} className="space-backdrop" aria-hidden="true" data-running="false" data-meteor-state="idle">
     <div className="space-dust-depth"><div className="space-dust space-dust--left"/><div className="space-dust space-dust--right"/></div>
-    {layers.map(layer=><div key={layer.name} className={`space-star-depth space-star-depth--${layer.name}`}><svg className={`space-star-field space-star-field--${layer.name}`} viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
-      {layer.stars.map((star,i)=><circle key={i} cx={star.x} cy={star.y} r={star.r} fill={i%5===0?'#b4c8dc':'#e5e9ee'} opacity={star.opacity} className={star.bright?'space-star-shimmer':undefined} style={star.bright?{animationDelay:`-${i%11}s`,animationDuration:`${8+i%7}s`}:undefined}/>)}
+    {layers.map(layer=><div key={layer.name} className={`space-star-depth space-star-depth--${layer.name}`}><svg className={`space-star-field space-star-field--${layer.name}`} viewBox={'0 0 '+size.width+' '+size.height} preserveAspectRatio="none">
+      {layer.stars.map((star,i)=><circle key={i} cx={star.x/1600*size.width} cy={star.y/1000*size.height} r={star.r} fill={i%5===0?'#b4c8dc':'#e5e9ee'} opacity={star.opacity} className={star.bright?'space-star-shimmer':undefined} style={star.bright?{animationDelay:`-${i%11}s`,animationDuration:`${8+i%7}s`}:undefined}/>)}
     </svg></div>)}
     <div className="space-quiet-center"/>
     <div ref={meteor} className="space-meteor"><span/></div>
